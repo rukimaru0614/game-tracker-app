@@ -380,7 +380,7 @@ export default function MainContent() {
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
         rp: userTierPoints, // ← プレイヤー入力値を直接使用
-        currentTier: selectedRank, // ← 選んだランクをそのまま保存
+        currentTier: selectedRank || 'ランク未設定', // ← 選んだランクを必ず保存
         division: selectedDivision,
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
@@ -587,7 +587,7 @@ export default function MainContent() {
               <div>
                 <p className="text-sm text-gray-400">現在のランク</p>
                 <p className="text-lg font-bold text-white">
-                  {latestRecord?.currentTier}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
+                  {latestRecord?.currentTier || 'ランク未設定'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
                 </p>
               </div>
             </div>
@@ -899,7 +899,7 @@ export default function MainContent() {
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {rankUpPrediction?.currentRank || latestRecord?.currentTier || 'データ入力待ち'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
+                    {rankUpPrediction?.currentRank || latestRecord?.currentTier || 'ランク未設定'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
                   </p>
                 </div>
                 <div className="text-right">
