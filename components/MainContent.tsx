@@ -374,13 +374,24 @@ export default function MainContent() {
       // プレイヤーが入力した値を直接使用
       const userTierPoints = parseInt(currentTierPoints) || 0
       
+      // selectedRankが空の場合のバックアップ処理
+      const rankToSave = selectedRank || '未選択'
+      
+      // デバッグ用ログ
+      console.log('保存データ確認:', {
+        selectedRank,
+        rankToSave,
+        currentTierPoints,
+        selectedDivision
+      })
+      
       const newRecord: GameRecord = {
         id: Date.now().toString(),
         timestamp: Date.now(),
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
         rp: userTierPoints, // ← プレイヤー入力値を直接使用
-        currentTier: selectedRank || 'ランク未設定', // ← 選んだランクを必ず保存
+        currentTier: rankToSave, // ← 選んだランクを必ず保存
         division: selectedDivision,
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
