@@ -420,13 +420,26 @@ export default function MainContent() {
 
   try {
     // 2段構え - データが1ミリでも不完全ならLoading表示
-    if (!selectedGame || !gameRecords || !gameRecords.length) {
+    if (!selectedGame) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-xl text-gray-400">ゲーム選択中...</div>
+        </div>
+      )
+    }
+    
+    if (!gameRecords) {
       return (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-xl text-gray-400">データ読み込み中...</div>
         </div>
       )
     }
+    
+    // データが空の場合でもメインコンテンツを表示
+    console.log('🔍 Debug: selectedGame:', selectedGame)
+    console.log('🔍 Debug: gameRecords:', gameRecords)
+    console.log('🔍 Debug: gameRecords.length:', gameRecords.length)
     
     return (
       <div className="flex flex-col gap-4">
