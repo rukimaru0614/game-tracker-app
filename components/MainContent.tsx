@@ -377,10 +377,10 @@ export default function MainContent() {
       // プレイヤーが入力した値を直接使用 - バリデーションを撤廃
       const userTierPoints = parseInt(currentTierPoints) || 0
       
-      // 保存オブジェクトの完全固定 - 自由な文字での保存を許可
+      // バリデーションの完全撤廃 - どんな文字でも保存できる
       const newRecord = {
         id: Date.now().toString(),
-        rank: selectedRank, // ← ユーザー入力をそのまま保存
+        rank: selectedRank, // ← ユーザー入力をそのまま保存（Apexチェック不要）
         division: selectedDivision,
         rp: Number(currentTierPoints),
         date: new Date().toISOString(),
@@ -514,33 +514,14 @@ export default function MainContent() {
     }
   }, [gameRecords.length])
   
-  // グラフデータの重複排除と同期
+  // グラフデータの重複排除と同期 - データ制限を完全に解除
   const chartData = useMemo(() => {
-    // timestampで重複排除
-    const uniqueRecords = new Map<number, GameRecord>()
-    gameRecords.forEach(record => {
-      uniqueRecords.set(record.timestamp, record)
-    })
+    if (!gameRecords || gameRecords.length === 0) {
+      return []
+    }
     
-    const sortedRecords = Array.from(uniqueRecords.values()).sort((a, b) => 
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    )
-    
-    const filteredRecords = sortedRecords.filter(record => {
-      const recordDate = new Date(record.date)
-      const now = new Date()
-      
-      if (periodFilter === 'week') {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        return recordDate >= weekAgo
-      } else if (periodFilter === 'month') {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-        return recordDate >= monthAgo
-      }
-      return true
-    })
-
-    return filteredRecords.map((record, index) => ({
+    // gameRecords全体を使用（配列全体を渡す）
+    return gameRecords.map((record, index) => ({
       ...record,
       fullRecord: record,
       displayDate: new Date(record.date).toLocaleDateString('ja-JP', {
@@ -551,7 +532,7 @@ export default function MainContent() {
       rank: record.rank || '未設定', // ← 履歴とグラフを対応させる
       division: record.division || '' // ← 履歴とグラフを対応させる
     }))
-  }, [gameRecords, periodFilter])
+  }, [gameRecords]) // ← 依存配列にgameRecordsを入れて全データを監視
 
   // 目標までの残りRPを計算 - 超強力安全装置付き
   const remainingToGoal = useMemo(() => {
