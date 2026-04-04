@@ -198,39 +198,49 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
     const numValue = parseInt(value) || 0
     const maxPoints = getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)
     
-    // ST6のMP自動ランクアップ
+    // ST6のMP自動ランクアップ（公式数値）
     if (selectedGame?.id === 'street-fighter-6') {
+      console.log('🎯 ST6ランク判定 - 現在の数値:', numValue)
+      
       // まず現在のランクがMPランクかLPランクかを判定
       const isCurrentRankMP = ['マスター', 'ハイマスター', 'グランドマスター', 'アルティメットマスター'].includes(selectedRank)
       
       if (numValue >= 2200) {
+        console.log('🎯 判定結果: アルティメットマスター (2200以上)')
         setSelectedRank('アルティメットマスター')
         setCurrentTierPoints('0')
       } else if (numValue >= 1900) {
+        console.log('🎯 判定結果: グランドマスター (1900以上)')
         setSelectedRank('グランドマスター')
         setCurrentTierPoints('0')
       } else if (numValue >= 1600) {
+        console.log('🎯 判定結果: ハイマスター (1600以上)')
         setSelectedRank('ハイマスター')
         setCurrentTierPoints('0')
       } else if (isCurrentRankMP && numValue < 1600) {
         // MPランクからLPランクに戻す場合はマスターに
+        console.log('🎯 判定結果: マスターに戻す (MPランクからLP値)')
         setSelectedRank('マスター')
         setCurrentTierPoints(value)
       } else {
         // LPランク（ダイアモンド〜アイアン）は現在のランクを維持
-        // ただし、100000以上の場合はマスターに強制アップ
-        if (numValue >= 100000) {
+        // ただし、25000以上の場合はマスターに強制アップ
+        if (numValue >= 25000) {
+          console.log('🎯 判定結果: マスターに自動昇格 (25000以上)')
           setSelectedRank('マスター')
           setCurrentTierPoints('0')
-        } else if (maxPoints > 0 && numValue > maxPoints) {
-          if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
-            alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
-          } else {
-            alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
-          }
-          setCurrentTierPoints(maxPoints.toString())
         } else {
-          setCurrentTierPoints(value)
+          console.log('🎯 判定結果: LPランクを維持 (25000未満)')
+          if (maxPoints > 0 && numValue > maxPoints) {
+            if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
+              alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
+            } else {
+              alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
+            }
+            setCurrentTierPoints(maxPoints.toString())
+          } else {
+            setCurrentTierPoints(value)
+          }
         }
       }
     } else {
