@@ -487,14 +487,49 @@ export default function MainContent() {
     }
   }, [latestRecord, gameRecords])
   
-  // 古い壊れたデータをクリアする処理（初回のみ）
-  useEffect(() => {
-    const hasOldRecords = gameRecords.some(record => !record.currentTier || record.currentTier === 'ランク未設定')
-    if (hasOldRecords && gameRecords.length > 0) {
-      console.log('古い壊れたデータを検出しました。クリアします。')
-      // localStorage.clear() // すべてクリア
+  // 現在のRP（最新データ）を表示
+  const currentRP = useMemo(() => {
+    if (!gameRecords || gameRecords.length === 0) return null
+    const latest = gameRecords[gameRecords.length - 1]
+    return Number(latest?.rp || 0)
+  }, [gameRecords])
+  
+  // 5試合分析（ランクアップ予測）の復旧
+  const rankUpPrediction = useMemo(() => {
+    if (!gameRecords || gameRecords.length < 5) {
+      return { 
+        matchesNeeded: null, 
+        averageRPChange: 0,
+        status: `あと${5 - (gameRecords?.length || 0)}試合データが必要です`
+      }
     }
-  }, [])
+    
+    // 最新5試合のRP増減を計算
+    const latestRP = Number(gameRecords[gameRecords.length - 1]?.rp || 0)
+    const fiveMatchesAgoRP = Number(gameRecords[gameRecords.length - 5]?.rp || 0)
+    const averageRPChange = (latestRP - fiveMatchesAgoRP) / 5
+    
+    if (averageRPChange <= 0) {
+      return { 
+        matchesNeeded: null, 
+        averageRPChange,
+        status: 'RP増加なし'
+      }
+    }
+    
+    // 次のランクまでの必要RPを計算
+    const nextRankTargetRP = Math.ceil(latestRP / 1000) * 1000 + 1000 // 1000RP刻み
+    const pointsToNext = nextRankTargetRP - latestRP
+    const matchesNeeded = Math.ceil(pointsToNext / averageRPChange)
+    
+    return {
+      matchesNeeded,
+      averageRPChange,
+      pointsToNext,
+      status: '',
+      currentRP: latestRP
+    }
+  }, [gameRecords])
   
   // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
@@ -608,7 +643,7 @@ export default function MainContent() {
             <div className="text-right">
               <p className="text-sm text-gray-400">現在RP</p>
               <p className="text-lg font-bold text-yellow-400">
-                {latestRecord ? Number(latestRecord.rp).toLocaleString() : 'データ入力待ち'}
+                {currentRP ? currentRP.toLocaleString() : 'データ入力待ち'}
               </p>
             </div>
           </div>
@@ -905,15 +940,15 @@ export default function MainContent() {
             </div>
           </div>
 
-          {/* ランクアップ予測 */}
-          {latestRecord && (
+          {/* ランクアップ予測 - 5試合分析復旧 */}
+          {gameRecords && gameRecords.length > 0 && (
             <div className="mb-4 p-3 bg-gray-700 rounded-lg">
               <h4 className="text-md font-semibold mb-2">ランクアップ予測</h4>
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {rankUpPrediction?.currentRank || latestRecord?.currentTier || 'ランク未設定'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
+                    {latestRecord?.currentTier || 'ランク未設定'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
                   </p>
                 </div>
                 <div className="text-right">
