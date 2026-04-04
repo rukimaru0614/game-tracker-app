@@ -1137,7 +1137,7 @@ const handleTierPointsChange = (value: string) => {
                             const y = 40 + (1 - (point.points - minPoints) / range) * 240
                             
                             return (
-                              <g key={point.timestamp}>
+                              <g key={`point-${point.timestamp}-${index}`}>
                                 <circle
                                   cx={x}
                                   cy={y}
@@ -1205,7 +1205,7 @@ const handleTierPointsChange = (value: string) => {
                           const label = date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
                           
                           return (
-                            <g key={point.timestamp}>
+                            <g key={`label-${point.timestamp}-${index}`}>
                               <text
                                 x={x}
                                 y="300"
