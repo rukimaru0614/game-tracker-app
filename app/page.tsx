@@ -58,44 +58,73 @@ export default function Home() {
   const [loginStreak, setLoginStreak] = useState(0)
   const [lastLoginDate, setLastLoginDate] = useState<string | null>(null)
   
-  // データ洗浄と重複削除（初回読み込み時のみ実行）
+  // データ洗浄と重複削除（初回読み込み時のみ実行）- 古いデータ無視
   useEffect(() => {
-    // 初回マウント時のみデータ洗浄を実行
-    const storedData = localStorage.getItem('gameData')
-    if (storedData) {
-      try {
+    try {
+      // 古いデータを一度無視して、新しく始める
+      const storedData = localStorage.getItem('gameData')
+      if (storedData) {
         const gameData = JSON.parse(storedData)
-        if (gameData.records && gameData.records.length > 0) {
+        
+        // データ形式の検証とクリーンアップ
+        if (gameData.records && Array.isArray(gameData.records)) {
           // ダミーデータのフィルタリング
           const filteredRecords = gameData.records.filter((record: any) => {
             if (record.points === 0 && record.currentTier === 'ルーキー') return false
             if (record.points === 15450) return false
             if (record.points === 0 && record.currentTier === '入力済み') return false
-            return true
+            // 必須フィールドの検証
+            return record.timestamp && record.date && typeof record.points === 'number'
           })
           
           // タイムスタンプで重複削除
           const uniqueRecords = new Map()
           filteredRecords.forEach((record: any) => {
-            uniqueRecords.set(record.timestamp, record)
+            if (record.timestamp) {
+              uniqueRecords.set(record.timestamp, record)
+            }
           })
           
           const finalRecords = Array.from(uniqueRecords.values()).sort((a, b) => 
             new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
           )
           
-          if (finalRecords.length !== gameData.records.length) {
-            const cleanedData = {
-              ...gameData,
-              records: finalRecords
-            }
-            localStorage.setItem('gameData', JSON.stringify(cleanedData))
-            setGameData(cleanedData)
+          // クリーンアップしたデータで保存
+          const cleanedData = {
+            games: gameData.games || [],
+            records: finalRecords,
+            selectedGameId: gameData.selectedGameId || 'apex-legends'
           }
+          
+          localStorage.setItem('gameData', JSON.stringify(cleanedData))
+          setGameData(cleanedData)
+          
+          console.log('Data cleanup completed:', {
+            original: gameData.records.length,
+            filtered: filteredRecords.length,
+            final: finalRecords.length
+          })
         }
-      } catch (error) {
-        console.error('データ洗浄エラー:', error)
+      } else {
+        // データがない場合は初期化
+        const initialData = {
+          games: DEFAULT_GAMES,
+          records: [],
+          selectedGameId: 'apex-legends'
+        }
+        localStorage.setItem('gameData', JSON.stringify(initialData))
+        setGameData(initialData)
       }
+    } catch (error) {
+      console.error('データ読み込みエラー:', error)
+      // エラー時は初期化
+      const initialData = {
+        games: DEFAULT_GAMES,
+        records: [],
+        selectedGameId: 'apex-legends'
+      }
+      localStorage.setItem('gameData', JSON.stringify(initialData))
+      setGameData(initialData)
     }
   }, [])
 
