@@ -193,55 +193,43 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
   return apexMaxPoints[rank]?.[division] || 0
 }
 
-// MP自動ランクアップロジック（ST6専用）
+// MP自動ランクアップロジック（ST6専用 - 安全な実装）
   const handleTierPointsChange = (value: string) => {
     const numValue = parseInt(value) || 0
     const maxPoints = getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)
     
-    // ST6のMP自動ランクアップ（公式数値）
+    // ST6のMP自動ランクアップ（安全な実装）
     if (selectedGame?.id === 'street-fighter-6') {
-      console.log('🎯 ST6ランク判定 - 現在の数値:', numValue)
+      const mp = Number(value);
+      let targetRank = selectedRank;
+
+      // 25,000 LP以上でマスターへ
+      if (mp >= 25000) {
+        targetRank = 'マスター';
+      }
+      // マスター以降のMP（MR）判定
+      if (mp >= 2200) {
+        targetRank = 'アルティメットマスター';
+      } else if (mp >= 1900) {
+        targetRank = 'グランドマスター';
+      } else if (mp >= 1600) {
+        targetRank = 'ハイマスター';
+      }
+
+      if (targetRank !== selectedRank) {
+        setSelectedRank(targetRank);
+      }
       
-      // まず現在のランクがMPランクかLPランクかを判定
-      const isCurrentRankMP = ['マスター', 'ハイマスター', 'グランドマスター', 'アルティメットマスター'].includes(selectedRank)
-      
-      if (numValue >= 2200) {
-        console.log('🎯 判定結果: アルティメットマスター (2200以上)')
-        setSelectedRank('アルティメットマスター')
-        setCurrentTierPoints('0')
-      } else if (numValue >= 1900) {
-        console.log('🎯 判定結果: グランドマスター (1900以上)')
-        setSelectedRank('グランドマスター')
-        setCurrentTierPoints('0')
-      } else if (numValue >= 1600) {
-        console.log('🎯 判定結果: ハイマスター (1600以上)')
-        setSelectedRank('ハイマスター')
-        setCurrentTierPoints('0')
-      } else if (isCurrentRankMP && numValue < 1600) {
-        // MPランクからLPランクに戻す場合はマスターに
-        console.log('🎯 判定結果: マスターに戻す (MPランクからLP値)')
-        setSelectedRank('マスター')
-        setCurrentTierPoints(value)
-      } else {
-        // LPランク（ダイアモンド〜アイアン）は現在のランクを維持
-        // ただし、25000以上の場合はマスターに強制アップ
-        if (numValue >= 25000) {
-          console.log('🎯 判定結果: マスターに自動昇格 (25000以上)')
-          setSelectedRank('マスター')
-          setCurrentTierPoints('0')
+      // 通常の上限チェック
+      if (maxPoints > 0 && numValue > maxPoints && numValue < 25000) {
+        if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
+          alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
         } else {
-          console.log('🎯 判定結果: LPランクを維持 (25000未満)')
-          if (maxPoints > 0 && numValue > maxPoints) {
-            if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
-              alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
-            } else {
-              alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
-            }
-            setCurrentTierPoints(maxPoints.toString())
-          } else {
-            setCurrentTierPoints(value)
-          }
+          alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
         }
+        setCurrentTierPoints(maxPoints.toString())
+      } else {
+        setCurrentTierPoints(value)
       }
     } else {
       // 他のゲームの通常処理
@@ -775,7 +763,7 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
     console.log('🔍 Debug: gameRecords.length:', gameRecords.length)
     
     return (
-      <div className="flex flex-col gap-4 w-full min-h-screen pb-32">
+      <div className="flex flex-col gap-4 w-full" style={{ minHeight: '100vh', paddingBottom: '80px' }}>
         {/* ヘッダーとログイン日数 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">

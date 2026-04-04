@@ -14,7 +14,9 @@ export default function Home() {
     }
   }, []);
 
-  if (!isMounted) return null;
+  if (!isMounted) {
+    return <div style={{ color: 'white', padding: '20px' }}>システム起動中...</div>;
+  }
 
   return (
     <div style={{ backgroundColor: "#111827", minHeight: "100vh" }}>
