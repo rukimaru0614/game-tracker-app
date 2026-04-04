@@ -1,53 +1,60 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Lock, Mail } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { Lock, Mail } from "lucide-react";
 
-const CORRECT_PASSWORD = 'IR614'
+const CORRECT_PASSWORD = "IR614";
 
 export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () => void }) {
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // ハイドレーションエラー対策
   useEffect(() => {
-    setIsMounted(true)
-  }, [])
+    setIsMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
     
     try {
       if (password === CORRECT_PASSWORD) {
         // 認証成功
-        localStorage.setItem('app-authenticated', 'true')
-        localStorage.setItem('app-auth-time', new Date().toISOString())
-        onAuthenticated()
+        localStorage.setItem("auth", "true");
+        onAuthenticated();
       } else {
-        setError(true)
-        setTimeout(() => setError(false), 2000)
+        setError(true);
+        setTimeout(() => setError(false), 2000);
       }
     } catch (error) {
-      console.error('Authentication error:', error)
-      setError(true)
-      setTimeout(() => setError(false), 2000)
+      console.error("Authentication error:", error);
+      setError(true);
+      setTimeout(() => setError(false), 2000);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // ハイドレーションエラー対策 - マウント前は何も表示しない
   if (!isMounted) {
-    return null
+    return null;
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center px-4">
+      {/* 動的背景要素 */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse animation-delay-2000"></div>
+        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse animation-delay-4000"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+      </div>
+
       {/* ガラスのような質感のカード */}
-      <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-8">
+      <div className="relative z-10 backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-8 w-full max-w-md">
         {/* ヘッダー */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl mb-4 shadow-lg">
@@ -93,7 +100,7 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
                 認証中...
               </div>
             ) : (
-              'ログイン'
+              "ログイン"
             )}
           </button>
         </form>
@@ -118,6 +125,25 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
           </button>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.15;
+            transform: scale(1.02);
+          }
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
-  )
+  );
 }
