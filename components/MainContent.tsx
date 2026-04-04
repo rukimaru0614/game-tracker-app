@@ -387,6 +387,7 @@ export default function MainContent() {
         memo: memo,
         matches: parseInt(matches) || 0,
         bestPlacement: parseInt(bestPlacement) || 0,
+        gameId: selectedGame?.id || 'default',
       }
 
       await addRecord(newRecord)
@@ -438,22 +439,48 @@ export default function MainContent() {
     return Math.round(averageChange)
   }, [gameRecords])
   
-  // ランクアップ予測（過去5試合のRP増減平均から計算）
+  // ランクアップ予測（5試合平均で計算）
   const rankUpPrediction = useMemo(() => {
-    if (!latestRecord || !currentRank) return null
+    if (!latestRecord || !gameRecords || gameRecords.length < 5) {
+      return { 
+        matchesNeeded: null, 
+        isTopRank: false, 
+        averageRPChange: 0,
+        status: 'データ収集中...' 
+      }
+    }
     
-    const pointsToNext = currentRank.pointsToNext
-    if (pointsToNext <= 0) return { matchesNeeded: 0, isTopRank: true }
+    // 最新5試合のRP増減を計算
+    const recentRecords = gameRecords.slice(-5)
+    const latestRP = Number(recentRecords[recentRecords.length - 1]?.rp || 0)
+    const fiveMatchesAgoRP = Number(recentRecords[0]?.rp || 0)
+    const totalRPChange = latestRP - fiveMatchesAgoRP
+    const averageRPChange = totalRPChange / 4 // 4回の変化（5試合間）
     
-    const averageRPChangePerMatch = recentAverageRPChange !== 0 ? recentAverageRPChange : 50 // デフォルト50RP増加
-    const matchesNeeded = Math.ceil(pointsToNext / Math.abs(averageRPChangePerMatch))
+    if (averageRPChange <= 0) {
+      return { 
+        matchesNeeded: null, 
+        isTopRank: false, 
+        averageRPChange,
+        status: 'RP増加なし' 
+      }
+    }
+    
+    // 次のランクまでの必要RPを仮計算（簡易版）
+    const currentRP = latestRP
+    const nextRankRP = Math.ceil(currentRP / 1000) * 1000 + 1000 // 1000RP刻みで仮計算
+    const pointsToNext = nextRankRP - currentRP
+    
+    const matchesNeeded = Math.ceil(pointsToNext / averageRPChange)
     
     return {
       matchesNeeded,
       isTopRank: false,
-      averageRPChangePerMatch
+      averageRPChange,
+      pointsToNext,
+      status: ''
     }
-  }, [latestRecord, currentRank, recentAverageRPChange])
+  }, [latestRecord, gameRecords])
   
   // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
@@ -865,7 +892,7 @@ export default function MainContent() {
           </div>
 
           {/* ランクアップ予測 */}
-          {latestRecord && rankUpPrediction && (
+          {latestRecord && (
             <div className="mb-4 p-3 bg-gray-700 rounded-lg">
               <h4 className="text-md font-semibold mb-2">ランクアップ予測</h4>
               <div className="flex items-center justify-between mb-3">
@@ -878,24 +905,30 @@ export default function MainContent() {
                 <div className="text-right">
                   <p className="text-sm text-gray-400">次のランクまで</p>
                   <p className="text-lg font-bold text-green-400">
-                    計算中...
+                    {rankUpPrediction?.pointsToNext ? `${rankUpPrediction.pointsToNext} RP` : '計算中...'}
                   </p>
                 </div>
               </div>
               
-              {/* 過去5試合の平均と予測 */}
+              {/* 5試合平均と予測 */}
               <div className="bg-gray-600 rounded p-2 mb-3">
                 <div className="flex items-center justify-between text-sm">
                   <div>
-                    <p className="text-gray-400">過去5試合の平均増減</p>
+                    <p className="text-gray-400">5試合平均増減</p>
                     <p className="font-bold text-white">
-                      {recentAverageRPChange > 0 ? '+' : ''}{recentAverageRPChange} RP/試合
+                      {rankUpPrediction?.averageRPChange ? 
+                        `${rankUpPrediction.averageRPChange > 0 ? '+' : ''}${rankUpPrediction.averageRPChange.toFixed(1)} RP/試合` : 
+                        '計算中...'
+                      }
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-400">予測試合数</p>
                     <p className="font-bold text-yellow-400">
-                      {rankUpPrediction.isTopRank ? '-' : `${rankUpPrediction.matchesNeeded} 試合`}
+                      {rankUpPrediction?.matchesNeeded ? 
+                        `${rankUpPrediction.matchesNeeded} 試合` : 
+                        rankUpPrediction?.status || '計算中...'
+                      }
                     </p>
                   </div>
                 </div>
@@ -905,11 +938,11 @@ export default function MainContent() {
                 <div className="w-full bg-gray-600 rounded-full h-2">
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: '50%' }}
+                    style={{ width: rankUpPrediction?.averageRPChange > 0 ? '60%' : '30%' }}
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  計算中...
+                  {rankUpPrediction?.status || '予測計算中...'}
                 </p>
               </div>
             </div>
