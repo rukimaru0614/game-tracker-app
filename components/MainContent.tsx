@@ -380,7 +380,7 @@ export default function MainContent() {
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
         rp: userTierPoints, // ← プレイヤー入力値を直接使用
-        currentTier: selectedRank || '入力済み',
+        currentTier: selectedRank, // ← 選んだランクをそのまま保存
         division: selectedDivision,
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
@@ -439,7 +439,7 @@ export default function MainContent() {
     return Math.round(averageChange)
   }, [gameRecords])
   
-  // ランクアップ予測（5試合平均で計算）
+  // ランクアップ予測（record.rankとrecord.rpで計算）
   const rankUpPrediction = useMemo(() => {
     if (!latestRecord || !gameRecords || gameRecords.length < 5) {
       return { 
@@ -466,10 +466,9 @@ export default function MainContent() {
       }
     }
     
-    // 次のランクまでの必要RPを仮計算（簡易版）
-    const currentRP = latestRP
-    const nextRankRP = Math.ceil(currentRP / 1000) * 1000 + 1000 // 1000RP刻みで仮計算
-    const pointsToNext = nextRankRP - currentRP
+    // 次のランクまでの必要RPを現在のランクに基づいて計算
+    const currentRankName = latestRecord.currentTier || ''
+    const pointsToNext = 1000 // 簡易計算：次ランクまで1000RPと仮定
     
     const matchesNeeded = Math.ceil(pointsToNext / averageRPChange)
     
@@ -478,7 +477,8 @@ export default function MainContent() {
       isTopRank: false,
       averageRPChange,
       pointsToNext,
-      status: ''
+      status: '',
+      currentRank: currentRankName // ← 現在のランク名を追加
     }
   }, [latestRecord, gameRecords])
   
@@ -587,7 +587,7 @@ export default function MainContent() {
               <div>
                 <p className="text-sm text-gray-400">現在のランク</p>
                 <p className="text-lg font-bold text-white">
-                  {latestRecord ? `${latestRecord.currentTier}${latestRecord.division ? ` ${latestRecord.division}` : ''}` : 'データ入力待ち'}
+                  {latestRecord?.currentTier}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
                 </p>
               </div>
             </div>
@@ -899,7 +899,7 @@ export default function MainContent() {
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {latestRecord ? `${latestRecord.currentTier}${latestRecord.division ? ` ${latestRecord.division}` : ''}` : 'データ入力待ち'}
+                    {rankUpPrediction?.currentRank || latestRecord?.currentTier || 'データ入力待ち'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
                   </p>
                 </div>
                 <div className="text-right">
