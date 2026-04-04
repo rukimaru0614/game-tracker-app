@@ -515,8 +515,10 @@ export default function Home() {
             <h3 className="text-md font-semibold mb-3">目標を設定</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">目標RP</label>
+                <label htmlFor="target-rp" className="block text-sm font-medium mb-2">目標RP</label>
                 <input
+                  id="target-rp"
+                  name="target-rp"
                   type="number"
                   value={goalSettings.targetRP}
                   onChange={(e) => setGoalSettings({...goalSettings, targetRP: parseInt(e.target.value) || 0})}
@@ -525,8 +527,10 @@ export default function Home() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">目標ランク</label>
+                <label htmlFor="target-rank" className="block text-sm font-medium mb-2">目標ランク</label>
                 <input
+                  id="target-rank"
+                  name="target-rank"
                   type="text"
                   value={goalSettings.targetRank}
                   onChange={(e) => setGoalSettings({...goalSettings, targetRank: e.target.value})}
@@ -535,8 +539,10 @@ export default function Home() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">期限</label>
+                <label htmlFor="deadline" className="block text-sm font-medium mb-2">期限</label>
                 <input
+                  id="deadline"
+                  name="deadline"
                   type="date"
                   value={goalSettings.deadline}
                   onChange={(e) => setGoalSettings({...goalSettings, deadline: e.target.value})}
@@ -558,8 +564,10 @@ export default function Home() {
         <div className="space-y-4">
           {/* 日付選択 */}
           <div>
-            <label className="block text-sm font-medium mb-2">日付</label>
+            <label htmlFor="selected-date" className="block text-sm font-medium mb-2">日付</label>
             <input
+              id="selected-date"
+              name="selected-date"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -619,8 +627,10 @@ export default function Home() {
           {/* 順位入力（ランキング制ランクの場合） */}
           {selectedRank && isGameRankingBased(selectedRank) && (
             <div>
-              <label className="block text-sm font-medium mb-2">順位</label>
+              <label htmlFor="ranking-position" className="block text-sm font-medium mb-2">順位</label>
               <input
+                id="ranking-position"
+                name="ranking-position"
                 type="number"
                 value={rankingPosition}
                 onChange={(e) => setRankingPosition(e.target.value)}
@@ -633,8 +643,10 @@ export default function Home() {
           {/* ティア内RP入力（通常ランクの場合） */}
           {selectedRank && !isGameRankingBased(selectedRank) && (
             <div>
-              <label className="block text-sm font-medium mb-2">ティア内RP</label>
+              <label htmlFor="tier-points" className="block text-sm font-medium mb-2">ティア内RP</label>
               <input
+                id="tier-points"
+                name="tier-points"
                 type="number"
                 value={currentTierPoints}
                 onChange={(e) => setCurrentTierPoints(e.target.value)}
@@ -646,8 +658,10 @@ export default function Home() {
 
           {/* メモ入力 */}
           <div>
-            <label className="block text-sm font-medium mb-2">メモ（任意）</label>
+            <label htmlFor="memo" className="block text-sm font-medium mb-2">メモ（任意）</label>
             <textarea
+              id="memo"
+              name="memo"
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               placeholder="今日の練習で気づいたこと、改善点など"
@@ -659,8 +673,10 @@ export default function Home() {
           {/* 試合数と最高順位 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">試合数（任意）</label>
+              <label htmlFor="matches" className="block text-sm font-medium mb-2">試合数（任意）</label>
               <input
+                id="matches"
+                name="matches"
                 type="number"
                 value={matches}
                 onChange={(e) => setMatches(e.target.value)}
@@ -669,8 +685,10 @@ export default function Home() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">最高順位（任意）</label>
+              <label htmlFor="best-placement" className="block text-sm font-medium mb-2">最高順位（任意）</label>
               <input
+                id="best-placement"
+                name="best-placement"
                 type="number"
                 value={bestPlacement}
                 onChange={(e) => setBestPlacement(e.target.value)}
@@ -684,7 +702,7 @@ export default function Home() {
           <button
             onClick={saveRecord}
             disabled={isLoading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors mb-48"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
           >
             {isLoading ? '保存中...' : '記録を保存'}
           </button>

@@ -37,7 +37,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="192x192" href="/icon.jpg?v=3" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icon.jpg?v=3" />
         <meta name="apple-mobile-web-app-title" content="Game Tracker" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${inter.className} bg-gray-900 text-white min-h-screen flex flex-col`}>

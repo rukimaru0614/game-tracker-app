@@ -65,7 +65,10 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
+            <label htmlFor="password-input" className="sr-only">合言葉</label>
             <input
+              id="password-input"
+              name="password"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
