@@ -10,18 +10,6 @@ export const metadata: Metadata = {
   title: 'Game Tracker',
   description: 'ゲームのポイント推移を記録・可視化するアプリ - 開発者: IR',
   manifest: '/manifest.json',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
-  themeColor: '#1a1a1a',
-  icons: {
-    icon: [
-      { url: '/icon.jpg?v=3', type: 'image/jpeg' },
-    ],
-    apple: [
-      { url: '/icon.jpg?v=3', type: 'image/jpeg', sizes: '180x180' },
-      { url: '/icon.jpg?v=3', type: 'image/jpeg', sizes: '192x192' },
-      { url: '/icon.jpg?v=3', type: 'image/jpeg', sizes: '512x512' },
-    ],
-  },
 }
 
 export default function RootLayout({
