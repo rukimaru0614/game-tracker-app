@@ -209,6 +209,10 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
       } else if (numValue >= 1600) {
         setSelectedRank('ハイマスター')
         setCurrentTierPoints('0')
+      } else if (numValue >= 0) {
+        // 1599以下は強制的にマスターに
+        setSelectedRank('マスター')
+        setCurrentTierPoints(value)
       } else {
         // 通常の入力検証
         if (maxPoints > 0 && numValue > maxPoints) {
