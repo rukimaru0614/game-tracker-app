@@ -923,6 +923,79 @@ const handleTierPointsChange = (value: string) => {
             </div>
           </div>
         </div>
+
+        {/* グラフ表示 */}
+        <div className="my-6 bg-gray-800 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">RP推移グラフ</h3>
+            <button
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className={`p-2 rounded-lg transition-colors ${
+                showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+            >
+              <BarChart3 className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {showAnalytics && (
+            <div className="h-64 bg-gray-700 rounded-lg p-4 relative">
+              <div className="h-full flex items-end justify-between px-2">
+                {/* 記録データの簡易表示 */}
+                {gameRecords.slice(-10).map((record, index) => {
+                  const maxRP = Math.max(...gameRecords.map(r => r.points))
+                  const height = maxRP > 0 ? (record.points / maxRP) * 100 : 0
+                  
+                  return (
+                    <div
+                      key={record.id}
+                      className="flex flex-col items-center flex-1 mx-1"
+                    >
+                      <div
+                        className="w-full bg-blue-500 rounded-t transition-all duration-300"
+                        style={{ height: `${height}%`, minHeight: '4px' }}
+                        title={`${record.date} ${record.time}: ${record.points}RP`}
+                      />
+                      <div className="text-xs text-gray-400 mt-1 text-center">
+                        {new Date(record.timestamp).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              
+              {/* 目標ライン */}
+              {goalSettings?.targetRP > 0 && (
+                <div 
+                  className="absolute left-0 right-0 border-t-2 border-yellow-400 border-dashed" 
+                  style={{ 
+                    bottom: `${Math.max(...gameRecords.map(r => r.points)) > 0 ? 
+                      (1 - goalSettings.targetRP / Math.max(...gameRecords.map(r => r.points))) * 100 : 0}%` 
+                  }}
+                >
+                  <span className="absolute -top-2 left-2 text-xs text-yellow-400 bg-gray-800 px-1 rounded">
+                    目標: {goalSettings.targetRP}RP
+                  </span>
+                </div>
+              )}
+              
+              {/* 現在のRPライン */}
+              {latestRecord && (
+                <div 
+                  className="absolute left-0 right-0 border-t-2 border-green-400" 
+                  style={{ 
+                    bottom: `${Math.max(...gameRecords.map(r => r.points)) > 0 ? 
+                      (1 - latestRecord.points / Math.max(...gameRecords.map(r => r.points))) * 100 : 0}%` 
+                  }}
+                >
+                  <span className="absolute -top-2 right-2 text-xs text-green-400 bg-gray-800 px-1 rounded">
+                    現在: {latestRecord.points}RP
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     )
   } catch (error) {
