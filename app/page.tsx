@@ -587,66 +587,66 @@ export default function Home() {
 
         {/* 保存ボタンなどの操作パネル */}
         <div className="mb-6 bg-gray-800 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">新しい記録</h2>
-          <button
-            onClick={() => setShowGoalForm(!showGoalForm)}
-            className={`p-2 rounded-lg transition-colors ${
-              showGoalForm ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-            }`}
-          >
-            <Target className="w-5 h-5" />
-          </button>
-        </div>
-        
-        {/* 目標設定フォーム */}
-        {showGoalForm && (
-          <div className="mb-4 p-4 bg-gray-700 rounded-lg">
-            <h3 className="text-md font-semibold mb-3">目標を設定</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="target-rp" className="block text-sm font-medium mb-2">目標RP</label>
-                <input
-                  id="target-rp"
-                  name="target-rp"
-                  type="number"
-                  value={goalSettings.targetRP}
-                  onChange={(e) => setGoalSettings({...goalSettings, targetRP: parseInt(e.target.value) || 0})}
-                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                  placeholder="例: 10000"
-                />
-              </div>
-              <div>
-                <label htmlFor="target-rank" className="block text-sm font-medium mb-2">目標ランク</label>
-                <input
-                  id="target-rank"
-                  name="target-rank"
-                  type="text"
-                  value={goalSettings.targetRank}
-                  onChange={(e) => setGoalSettings({...goalSettings, targetRank: e.target.value})}
-                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                  placeholder="例: ダイヤモンド"
-                />
-              </div>
-              <div>
-                <label htmlFor="deadline" className="block text-sm font-medium mb-2">期限</label>
-                <input
-                  id="deadline"
-                  name="deadline"
-                  type="date"
-                  value={goalSettings.deadline}
-                  onChange={(e) => setGoalSettings({...goalSettings, deadline: e.target.value})}
-                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                />
-              </div>
-              <div className="flex items-end">
-                <button
-                  onClick={saveGoalSettings}
-                  className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
-                >
-                  目標を保存
-                </button>
-              </div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">新しい記録</h2>
+            <button
+              onClick={() => setShowGoalForm(!showGoalForm)}
+              className={`p-2 rounded-lg transition-colors ${
+                showGoalForm ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+            >
+              <Target className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {/* 目標設定フォーム */}
+          {showGoalForm && (
+            <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+              <h3 className="text-md font-semibold mb-3">目標を設定</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="target-rp" className="block text-sm font-medium mb-2">目標RP</label>
+                  <input
+                    id="target-rp"
+                    name="target-rp"
+                    type="number"
+                    value={goalSettings.targetRP}
+                    onChange={(e) => setGoalSettings({...goalSettings, targetRP: parseInt(e.target.value) || 0})}
+                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                    placeholder="例: 10000"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="target-rank" className="block text-sm font-medium mb-2">目標ランク</label>
+                  <input
+                    id="target-rank"
+                    name="target-rank"
+                    type="text"
+                    value={goalSettings.targetRank}
+                    onChange={(e) => setGoalSettings({...goalSettings, targetRank: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                    placeholder="例: ダイヤモンド"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="deadline" className="block text-sm font-medium mb-2">期限</label>
+                  <input
+                    id="deadline"
+                    name="deadline"
+                    type="date"
+                    value={goalSettings.deadline}
+                    onChange={(e) => setGoalSettings({...goalSettings, deadline: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={saveGoalSettings}
+                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+                  >
+                    目標を保存
+                  </button>
+                </div>
             </div>
           </div>
         )}
