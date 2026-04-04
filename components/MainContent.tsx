@@ -75,6 +75,14 @@ export default function MainContent() {
   const [showAnalytics, setShowAnalytics] = useState(false)
   const [isMounted, setIsMounted] = useState(false) // useEffect 完了まで何も出さない旗
   
+  // useEffect 完了まで何も出さない旗
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMounted(true)
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
+  
   // 目標設定状態
   const [goalSettings, setGoalSettings] = useState<GoalSettings>({
     targetRP: 0,
@@ -674,11 +682,7 @@ const handleTierPointsChange = (value: string) => {
 
   // useEffect 完了まで何も出さない - ブラウザの準備が100%整うまでローディング画面以外は一切描画させない
   if (!isMounted) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl text-gray-400">ブラウザ準備中...</div>
-      </div>
-    )
+    return null
   }
 
   try {
