@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
@@ -6,10 +6,28 @@ import AuthProvider from '@/components/AuthProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#1a1a1a',
+}
+
 export const metadata: Metadata = {
   title: 'Game Tracker',
   description: 'ゲームのポイント推移を記録・可視化するアプリ - 開発者: IR',
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icon.jpg?v=3', type: 'image/jpeg' },
+    ],
+    apple: [
+      { url: '/icon.jpg?v=3', type: 'image/jpeg', sizes: '180x180' },
+      { url: '/icon.jpg?v=3', type: 'image/jpeg', sizes: '192x192' },
+      { url: '/icon.jpg?v=3', type: 'image/jpeg', sizes: '512x512' },
+    ],
+  },
 }
 
 export default function RootLayout({
