@@ -599,12 +599,6 @@ const handleTierPointsChange = (value: string) => {
                   <div className="text-lg font-bold text-blue-400">
                     ティア内: {Number(currentRank?.tierPoints || 0).toLocaleString()} / {Number(currentRank?.maxPoints || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
                   </div>
-                  {/* 目標RPの表示 */}
-                  {goalSettings?.isActive && goalSettings?.targetRP > 0 && (
-                    <div className="text-sm text-yellow-400 mt-1">
-                      目標: {Number(goalSettings.targetRP || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
-                    </div>
-                  )}
                 </div>
               </div>
               
@@ -636,30 +630,6 @@ const handleTierPointsChange = (value: string) => {
             </div>
           </div>
         )}
-
-        {/* オレンジのデカ文字 - 計算結果の初期値を完全に固定 */}
-        <div className="my-6 bg-gray-800 rounded-lg p-6">
-          <div className="text-center">
-            <div className="text-6xl font-extrabold text-orange-500">
-              あと {Number(remainingToGoal || 0).toLocaleString()} RP
-            </div>
-            <div className="text-sm text-gray-400 mt-2">
-              目標: {Number(goalSettings?.targetRP || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
-            </div>
-          </div>
-        </div>
-
-        {/* 黄色の分析データ - .toFixed() を使用せず安全に計算 */}
-        <div className="my-6 bg-gray-800 rounded-lg p-4">
-          <div className="text-center">
-            <div className="text-3xl font-extrabold text-yellow-400">
-              あと約 {Number(analyticsData?.estimatedMatchesToGoal || 0)} 試合で目標達成！
-            </div>
-            <div className="text-sm text-gray-400 mt-2">
-              直近5試合の平均上昇RPから算出
-            </div>
-          </div>
-        </div>
 
         {/* 保存ボタンなどの操作パネル */}
         <div className="mb-6 bg-gray-800 rounded-lg p-4">
@@ -864,6 +834,30 @@ const handleTierPointsChange = (value: string) => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* オレンジのデカ文字 - 計算結果の初期値を完全に固定 */}
+        <div className="my-6 bg-gray-800 rounded-lg p-6">
+          <div className="text-center">
+            <div className="text-6xl font-extrabold text-orange-500">
+              あと {Number(remainingToGoal || 0).toLocaleString()} RP
+            </div>
+            <div className="text-sm text-gray-400 mt-2">
+              目標: {Number(goalSettings?.targetRP || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
+            </div>
+          </div>
+        </div>
+
+        {/* 黄色の分析データ - .toFixed() を使用せず安全に計算 */}
+        <div className="my-6 bg-gray-800 rounded-lg p-4">
+          <div className="text-center">
+            <div className="text-3xl font-extrabold text-yellow-400">
+              あと約 {Number(analyticsData?.estimatedMatchesToGoal || 0)} 試合で目標達成！
+            </div>
+            <div className="text-sm text-gray-400 mt-2">
+              直近5試合の平均上昇RPから算出
+            </div>
           </div>
         </div>
       </div>
