@@ -417,7 +417,13 @@ export default function MainContent() {
   // 最新データの定義を修正 - 配列の最後＝最新
   const latestRecord = gameRecords[gameRecords.length - 1]
   
-  const dailyChange = useMemo(() => getDailyChange(), [gameRecords])
+  // RP増加の計算を直結 - 最新と1つ前のRPを直接引き算
+  const rpChange = useMemo(() => {
+    if (!gameRecords || gameRecords.length < 2) return 0
+    const currentRp = gameRecords[gameRecords.length - 1]?.rp || 0
+    const prevRp = gameRecords[gameRecords.length - 2]?.rp || currentRp
+    return currentRp - prevRp
+  }, [gameRecords])
   
   // 新しい物理的判定関数を使用して現在のランクを計算
   const currentRank = useMemo(() => latestRecord ? calculateRankFromTotalRP(Number(latestRecord.rp)) : null, [latestRecord])
@@ -445,7 +451,7 @@ export default function MainContent() {
     return Number(latest?.rp || 0)
   }, [gameRecords])
   
-  // 5試合分析（ランクアップ予測）の確定 - 保存データで計算
+  // 5試合分析（ランクアップ予測）の確定 - 依存関係を修正
   const rankUpPrediction = useMemo(() => {
     if (!gameRecords || gameRecords.length < 5) {
       return { 
@@ -484,7 +490,7 @@ export default function MainContent() {
       status: '',
       currentRP: currentRP
     }
-  }, [gameRecords]) // ← 依存配列にgameRecordsを入れてデータが入った瞬間に再計算
+  }, [gameRecords]) // ← 依存配列にgameRecordsを確実に入れてデータ更新を検知
   
   // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
@@ -591,7 +597,7 @@ export default function MainContent() {
               <div>
                 <p className="text-sm text-gray-400">現在のランク</p>
                 <p className="text-lg font-bold text-white">
-                  {latestRecord ? `${latestRecord.rank} ${latestRecord.division}` : "記録を追加してください"}
+                  {gameRecords[gameRecords.length - 1]?.rank || "データなし"} {gameRecords[gameRecords.length - 1]?.division || ""}
                 </p>
               </div>
             </div>
@@ -903,7 +909,7 @@ export default function MainContent() {
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {latestRecord ? `${latestRecord.rank} ${latestRecord.division}` : "記録を追加してください"}
+                    {gameRecords[gameRecords.length - 1]?.rank || "データなし"} {gameRecords[gameRecords.length - 1]?.division || ""}
                   </p>
                 </div>
                 <div className="text-right">
