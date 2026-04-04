@@ -37,7 +37,10 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🔐 Password submitted:', password)
+    
     if (password === CORRECT_PASSWORD) {
+      console.log('🔐 Password correct, setting authenticated state')
       setIsAuthenticated(true)
       
       // localStorage操作をtry-catchで囲む
@@ -59,9 +62,11 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
       }
       
       // 即座にコールバックを実行
+      console.log('🔐 Executing authentication callback')
       onAuthenticated()
       console.log('✅ Authentication callback executed')
     } else {
+      console.log('🔐 Password incorrect')
       setError(true)
       setTimeout(() => setError(false), 2000)
     }
