@@ -24,6 +24,7 @@ export interface GameRecord {
   rp: number // 累計RP
   tierPoints: number // ティア内RP
   currentTier: string // 現在のランク名
+  rank: string // ランク名（保存用）
   division?: string // ディビジョン
   rankingPosition?: number // ランキング制ランクの順位
   memo: string

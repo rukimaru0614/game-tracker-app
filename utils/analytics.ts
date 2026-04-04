@@ -154,7 +154,7 @@ export function calculateGoalProgress(currentRP: number, goalRP: number): Analyt
 export function calculateAnalyticsData(records: GameRecord[], goalRP: number = 8000): AnalyticsData {
   const averagePlacement = calculateAveragePlacement(records)
   const latestRecord = records[records.length - 1]
-  const currentRP = latestRecord ? latestRecord.points : 0
+  const currentRP = latestRecord ? latestRecord.rp : 0
   
   const promotionPrediction = calculatePromotionPrediction(currentRP, averagePlacement)
   const performanceTrend = calculatePerformanceTrend(records)
