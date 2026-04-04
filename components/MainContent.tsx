@@ -218,7 +218,11 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
         setCurrentTierPoints(value)
       } else {
         // LPランク（ダイアモンド〜アイアン）は現在のランクを維持
-        if (maxPoints > 0 && numValue > maxPoints) {
+        // ただし、9999以上の場合はマスターに強制アップ
+        if (numValue >= 9999) {
+          setSelectedRank('マスター')
+          setCurrentTierPoints('0')
+        } else if (maxPoints > 0 && numValue > maxPoints) {
           if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
             alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
           } else {
