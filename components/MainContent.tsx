@@ -341,6 +341,9 @@ const handleTierPointsChange = (value: string) => {
   // 目標設定の保存
   const saveGoalSettings = () => {
     try {
+      console.log('🎯 Saving goal settings for game:', selectedGame?.id)
+      console.log('🎯 Current goal settings:', goalSettings)
+      
       // 目標設定をlocalStorageに保存
       const updatedGoalSettings = {
         ...goalSettings,
@@ -363,7 +366,9 @@ const handleTierPointsChange = (value: string) => {
         // 互換性のための全体目標設定も更新
         gameData.goalSettings = updatedGoalSettings
         
+        console.log('🎯 Updated gameData:', gameData)
         localStorage.setItem('gameData', JSON.stringify(gameData))
+        console.log('🎯 Game data saved to localStorage')
       } else {
         // gameDataがない場合は新規作成
         const initialData = {
@@ -375,11 +380,14 @@ const handleTierPointsChange = (value: string) => {
             [selectedGame?.id || 'apex-legends']: updatedGoalSettings
           }
         }
+        console.log('🎯 Created initial data:', initialData)
         localStorage.setItem('gameData', JSON.stringify(initialData))
+        console.log('🎯 Initial game data saved to localStorage')
       }
       
       // 別のlocalStorageにも保存（互換性のため）
       localStorage.setItem('goalSettings', JSON.stringify(updatedGoalSettings))
+      console.log('🎯 Goal settings saved to localStorage')
       
       setShowGoalForm(false)
       alert('目標を保存しました！')
@@ -391,26 +399,44 @@ const handleTierPointsChange = (value: string) => {
 
   // 目標設定の読み込み
   useEffect(() => {
+    console.log('🎯 Loading goal settings for game:', selectedGame?.id)
+    
+    // まずlocalStorageから全体設定を読み込み
     const stored = localStorage.getItem('goalSettings')
     if (stored) {
-      setGoalSettings(JSON.parse(stored))
+      const globalGoal = JSON.parse(stored)
+      console.log('🎯 Global goal settings:', globalGoal)
+      setGoalSettings(globalGoal)
     }
     
-    // gameDataからも目標設定を読み込み（優先）
+    // gameDataからゲームごとの目標設定を読み込み（優先）
     const gameDataStored = localStorage.getItem('gameData')
     if (gameDataStored) {
       try {
         const gameData = JSON.parse(gameDataStored)
-        if (gameData.goalSettings) {
-          setGoalSettings(gameData.goalSettings)
-        }
+        console.log('🎯 Game data loaded:', gameData)
         
         // ゲームごとの目標設定を読み込み
         if (gameData.goalSettingsMap && selectedGame) {
           const gameSpecificGoal = gameData.goalSettingsMap[selectedGame.id]
+          console.log('🎯 Game specific goal for', selectedGame.id, ':', gameSpecificGoal)
           if (gameSpecificGoal) {
             setGoalSettings(gameSpecificGoal)
+          } else {
+            // ゲームごとの設定がない場合はデフォルト設定を使用
+            const defaultGoal = {
+              targetRP: 0,
+              targetRank: '',
+              deadline: '',
+              isActive: false
+            }
+            console.log('🎯 Using default goal for', selectedGame.id, ':', defaultGoal)
+            setGoalSettings(defaultGoal)
           }
+        } else if (gameData.goalSettings) {
+          // 互換性のための全体目標設定
+          console.log('🎯 Using compatibility goal settings:', gameData.goalSettings)
+          setGoalSettings(gameData.goalSettings)
         }
       } catch (error) {
         console.error('gameData読み込みエラー:', error)
@@ -1104,9 +1130,9 @@ const handleTierPointsChange = (value: string) => {
           
           {showAnalytics && (
             <div className="bg-gray-700 rounded-lg p-4">
-              <div className="h-96 relative">
+              <div className="h-[32rem] relative">
                 {getFilteredGraphData().length > 0 ? (
-                  <svg width="100%" height="100%" viewBox="0 0 800 384" className="w-full h-full">
+                  <svg width="100%" height="100%" viewBox="0 0 800 512" className="w-full h-full">
                     {/* グリッド線 */}
                     <defs>
                       <pattern id="grid" width="80" height="64" patternUnits="userSpaceOnUse">
@@ -1121,7 +1147,7 @@ const handleTierPointsChange = (value: string) => {
                       const maxPoints = Math.max(...data.map(d => d.points))
                       const minPoints = Math.min(...data.map(d => d.points))
                       const range = maxPoints - minPoints || 1
-                      const y = 48 + (1 - (goalSettings.targetRP - minPoints) / range) * 288
+                      const y = 64 + (1 - (goalSettings.targetRP - minPoints) / range) * 384
                       return (
                         <g>
                           <line
@@ -1152,7 +1178,7 @@ const handleTierPointsChange = (value: string) => {
                       const maxPoints = Math.max(...data.map(d => d.points))
                       const minPoints = Math.min(...data.map(d => d.points))
                       const range = maxPoints - minPoints || 1
-                      const y = 48 + (1 - (latestRecord.points - minPoints) / range) * 288
+                      const y = 64 + (1 - (latestRecord.points - minPoints) / range) * 384
                       return (
                         <g>
                           <line
@@ -1181,7 +1207,7 @@ const handleTierPointsChange = (value: string) => {
                       const data = getFilteredGraphData()
                       if (data.length === 0) return null
                       
-                      const path = generateLinePath(data, 800, 384)
+                      const path = generateLinePath(data, 800, 512)
                       
                       return (
                         <g>
@@ -1201,7 +1227,7 @@ const handleTierPointsChange = (value: string) => {
                             const minPoints = Math.min(...data.map(d => d.points))
                             const range = maxPoints - minPoints || 1
                             const x = 40 + (index / (data.length - 1 || 1)) * 720
-                            const y = 48 + (1 - (point.points - minPoints) / range) * 288
+                            const y = 64 + (1 - (point.points - minPoints) / range) * 384
                             const isSelected = selectedDataPoint?.timestamp === point.timestamp
                             
                             return (
@@ -1239,7 +1265,7 @@ const handleTierPointsChange = (value: string) => {
                         
                         return [0, 1, 2, 3, 4].map(i => {
                           const value = minPoints + (range * (4 - i) / 4)
-                          const y = 48 + (i / 4) * 288
+                          const y = 64 + (i / 4) * 384
                           return (
                             <g key={i}>
                               <line
@@ -1278,7 +1304,7 @@ const handleTierPointsChange = (value: string) => {
                             <g key={`label-${point.timestamp}-${index}`}>
                               <text
                                 x={x}
-                                y="364"
+                                y="492"
                                 fill="#6b7280"
                                 fontSize="10"
                                 textAnchor="middle"
