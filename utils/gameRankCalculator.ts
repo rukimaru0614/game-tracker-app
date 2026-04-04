@@ -29,6 +29,319 @@ export function calculateGameRank(gameId: string, totalPoints: number): GameRank
   const ranks = system.ranks
   const thresholds = system.thresholds
   
+  // Street Fighter 6の特殊処理
+  if (gameId === 'street-fighter-6') {
+    // MPによる動的ランクアップロジック
+    if (totalPoints < 1000) {
+      // アイアン (0-999 LP)
+      const tierPoints = totalPoints
+      const maxTierPoints = 99999
+      const divisionIndex = Math.min(Math.floor(tierPoints / 200), 4)
+      const divisions = ['V', 'IV', 'III', 'II', 'I']
+      const division = divisions[4 - divisionIndex]
+      const actualTierPoints = tierPoints % 200
+      
+      return {
+        name: `アイアン ${division}`,
+        color: 'text-gray-600',
+        icon: '🔧',
+        minPoints: 0,
+        maxPoints: maxTierPoints,
+        tierPoints: actualTierPoints,
+        progress: actualTierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - actualTierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints,
+        division: division
+      }
+    } else if (totalPoints < 2000) {
+      // ブロンズ (1000-1999 LP)
+      const tierPoints = totalPoints - 1000
+      const maxTierPoints = 99999
+      const divisionIndex = Math.min(Math.floor(tierPoints / 200), 4)
+      const divisions = ['V', 'IV', 'III', 'II', 'I']
+      const division = divisions[4 - divisionIndex]
+      const actualTierPoints = tierPoints % 200
+      
+      return {
+        name: `ブロンズ ${division}`,
+        color: 'text-amber-700',
+        icon: '🥉',
+        minPoints: 1000,
+        maxPoints: maxTierPoints,
+        tierPoints: actualTierPoints,
+        progress: actualTierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - actualTierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints,
+        division: division
+      }
+    } else if (totalPoints < 3000) {
+      // シルバー (2000-2999 LP)
+      const tierPoints = totalPoints - 2000
+      const maxTierPoints = 99999
+      const divisionIndex = Math.min(Math.floor(tierPoints / 200), 4)
+      const divisions = ['V', 'IV', 'III', 'II', 'I']
+      const division = divisions[4 - divisionIndex]
+      const actualTierPoints = tierPoints % 200
+      
+      return {
+        name: `シルバー ${division}`,
+        color: 'text-gray-400',
+        icon: '🥈',
+        minPoints: 2000,
+        maxPoints: maxTierPoints,
+        tierPoints: actualTierPoints,
+        progress: actualTierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - actualTierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints,
+        division: division
+      }
+    } else if (totalPoints < 4000) {
+      // ゴールド (3000-3999 LP)
+      const tierPoints = totalPoints - 3000
+      const maxTierPoints = 99999
+      const divisionIndex = Math.min(Math.floor(tierPoints / 200), 4)
+      const divisions = ['V', 'IV', 'III', 'II', 'I']
+      const division = divisions[4 - divisionIndex]
+      const actualTierPoints = tierPoints % 200
+      
+      return {
+        name: `ゴールド ${division}`,
+        color: 'text-yellow-500',
+        icon: '🏅',
+        minPoints: 3000,
+        maxPoints: maxTierPoints,
+        tierPoints: actualTierPoints,
+        progress: actualTierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - actualTierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints,
+        division: division
+      }
+    } else if (totalPoints < 5000) {
+      // プラチナ (4000-4999 LP)
+      const tierPoints = totalPoints - 4000
+      const maxTierPoints = 99999
+      const divisionIndex = Math.min(Math.floor(tierPoints / 200), 4)
+      const divisions = ['V', 'IV', 'III', 'II', 'I']
+      const division = divisions[4 - divisionIndex]
+      const actualTierPoints = tierPoints % 200
+      
+      return {
+        name: `プラチナ ${division}`,
+        color: 'text-cyan-400',
+        icon: '🔷',
+        minPoints: 4000,
+        maxPoints: maxTierPoints,
+        tierPoints: actualTierPoints,
+        progress: actualTierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - actualTierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints,
+        division: division
+      }
+    } else if (totalPoints < 7000) {
+      // ダイアモンド (5000-6999 LP)
+      const tierPoints = totalPoints - 5000
+      const maxTierPoints = 99999
+      const divisionIndex = Math.min(Math.floor(tierPoints / 500), 4)
+      const divisions = ['V', 'IV', 'III', 'II', 'I']
+      const division = divisions[4 - divisionIndex]
+      const actualTierPoints = tierPoints % 500
+      
+      return {
+        name: `ダイアモンド ${division}`,
+        color: 'text-purple-400',
+        icon: '💎',
+        minPoints: 5000,
+        maxPoints: maxTierPoints,
+        tierPoints: actualTierPoints,
+        progress: actualTierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - actualTierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints,
+        division: division
+      }
+    } else if (totalPoints < 10000) {
+      // マスター (7000-9999 LP)
+      const tierPoints = totalPoints - 7000
+      const maxTierPoints = 2999 // 7000-9999
+      
+      return {
+        name: 'マスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 7000,
+        maxPoints: maxTierPoints,
+        tierPoints: tierPoints,
+        progress: tierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - tierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 15000) {
+      // マスター (10000-14999 LP)
+      const tierPoints = totalPoints - 10000
+      const maxTierPoints = 4999 // 10000-14999
+      
+      return {
+        name: 'マスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 10000,
+        maxPoints: maxTierPoints,
+        tierPoints: tierPoints,
+        progress: tierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - tierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 20000) {
+      // マスター (15000-19999 LP)
+      const tierPoints = totalPoints - 15000
+      const maxTierPoints = 9999 // 15000-19999
+      
+      return {
+        name: 'マスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 15000,
+        maxPoints: maxTierPoints,
+        tierPoints: tierPoints,
+        progress: tierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - tierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 30000) {
+      // マスター (20000-29999 LP)
+      const tierPoints = totalPoints - 20000
+      const maxTierPoints = 9999 // 20000-29999
+      
+      return {
+        name: 'マスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 20000,
+        maxPoints: maxTierPoints,
+        tierPoints: tierPoints,
+        progress: tierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - tierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 50000) {
+      // マスター (30000-49999 LP)
+      const tierPoints = totalPoints - 30000
+      const maxTierPoints = 19999 // 30000-49999
+      
+      return {
+        name: 'マスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 30000,
+        maxPoints: maxTierPoints,
+        tierPoints: tierPoints,
+        progress: tierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - tierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 70000) {
+      // ハイマスター (50000-69999 LP)
+      const tierPoints = totalPoints - 50000
+      const maxTierPoints = 19999 // 50000-69999
+      
+      return {
+        name: 'ハイマスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 50000,
+        maxPoints: maxTierPoints,
+        tierPoints: tierPoints,
+        progress: tierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - tierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 90000) {
+      // グランドマスター (70000-89999 LP)
+      const tierPoints = totalPoints - 70000
+      const maxTierPoints = 19999 // 70000-89999
+      
+      return {
+        name: 'グランドマスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 70000,
+        maxPoints: maxTierPoints,
+        tierPoints: tierPoints,
+        progress: tierPoints / maxTierPoints,
+        pointsToNext: maxTierPoints - tierPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 1600) {
+      // マスター (0-1599 LP) - 閾値未満
+      return {
+        name: 'マスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 0,
+        maxPoints: 1599,
+        tierPoints: totalPoints,
+        progress: totalPoints / 1599,
+        pointsToNext: 1599 - totalPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 1900) {
+      // ハイマスター (1600-1899 LP)
+      return {
+        name: 'ハイマスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 1600,
+        maxPoints: 1899,
+        tierPoints: totalPoints - 1600,
+        progress: (totalPoints - 1600) / 299,
+        pointsToNext: 1899 - totalPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else if (totalPoints < 2200) {
+      // グランドマスター (1900-2199 LP)
+      return {
+        name: 'グランドマスター',
+        color: 'text-red-500',
+        icon: '👑',
+        minPoints: 1900,
+        maxPoints: 2199,
+        tierPoints: totalPoints - 1900,
+        progress: (totalPoints - 1900) / 299,
+        pointsToNext: 2199 - totalPoints,
+        isTopRank: false,
+        totalPoints: totalPoints
+      }
+    } else {
+      // アルティメットマスター (2200+ LP) - ランキング制
+      return {
+        name: 'アルティメットマスター',
+        color: 'text-red-600',
+        icon: '🔥',
+        minPoints: 2200,
+        maxPoints: 999999,
+        tierPoints: totalPoints - 2200,
+        progress: 1,
+        pointsToNext: 0,
+        isTopRank: true,
+        totalPoints: totalPoints
+      }
+    }
+  }
+  
   // Apex Legendsの特殊処理
   if (gameId === 'apex-legends') {
     // 正確な累計RPで判定

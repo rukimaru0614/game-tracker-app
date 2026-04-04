@@ -91,7 +91,7 @@ export const GAME_RANK_SYSTEMS: GameRankSystem = {
   'street-fighter-6': {
     name: 'Street Fighter 6',
     pointUnit: 'LP',
-    thresholds: [0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 15000, 20000, 30000, 50000],
+    thresholds: [0, 1000, 2000, 3000, 4000, 5000, 7000, 10000, 15000, 20000, 30000, 50000, 70000, 90000],
     ranks: [
       {
         name: 'アイアン',
@@ -137,13 +137,27 @@ export const GAME_RANK_SYSTEMS: GameRankSystem = {
       },
       {
         name: 'マスター',
-        maxPoints: 999999,
+        maxPoints: 1599,
         divisions: [],
         color: 'text-red-500',
         icon: '👑'
       },
       {
-        name: 'レジェンド',
+        name: 'ハイマスター',
+        maxPoints: 1899,
+        divisions: [],
+        color: 'text-red-500',
+        icon: '👑'
+      },
+      {
+        name: 'グランドマスター',
+        maxPoints: 2199,
+        divisions: [],
+        color: 'text-red-500',
+        icon: '👑'
+      },
+      {
+        name: 'アルティメットマスター',
         maxPoints: 999999,
         divisions: [],
         color: 'text-red-600',
