@@ -285,10 +285,23 @@ export default function MainContent() {
     })
     
     const thresholds = getGameRankThresholds(selectedGame.id)
-    const rankThreshold = thresholds.find(t => t.name === selectedRank)
+    
+    // ランク名をマッチングさせるための処理
+    let matchedRank = selectedRank
+    if (selectedRank === 'ルーキー') matchedRank = 'ルーキーIV'
+    if (selectedRank === 'ブロンズ') matchedRank = 'ブロンズIV'
+    if (selectedRank === 'シルバー') matchedRank = 'シルバーIV'
+    if (selectedRank === 'ゴールド') matchedRank = 'ゴールドIV'
+    if (selectedRank === 'プラチナ') matchedRank = 'プラチナIV'
+    if (selectedRank === 'ダイヤモンド') matchedRank = 'ダイヤモンドIV'
+    if (selectedRank === 'マスター') matchedRank = 'マスター'
+    if (selectedRank === 'プレデター') matchedRank = 'プレデター'
+    
+    const rankThreshold = thresholds.find(t => t.name === matchedRank)
     
     console.log('🔍 Debug thresholds:', {
       thresholds: thresholds.map(t => t.name),
+      matchedRank,
       rankThreshold
     })
     
