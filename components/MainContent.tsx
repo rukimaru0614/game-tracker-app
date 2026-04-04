@@ -543,7 +543,10 @@ export default function MainContent() {
       displayDate: new Date(record.date).toLocaleDateString('ja-JP', {
         month: 'short',
         day: 'numeric'
-      })
+      }),
+      rp: record.rp || 0, // ← 履歴とグラフを対応させる
+      rank: record.rank || '未設定', // ← 履歴とグラフを対応させる
+      division: record.division || '' // ← 履歴とグラフを対応させる
     }))
   }, [gameRecords, periodFilter])
 
