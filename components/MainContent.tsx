@@ -369,15 +369,18 @@ export default function MainContent() {
     })
   }
 
-  const saveRecord = async () => {
+        const saveRecord = async () => {
     try {
       // コンソールで犯人を見つける
       alert("今から保存するランクは: " + selectedRank);
       
-      // 保存オブジェクトの完全固定 - 物理的強制書き換え
+      // プレイヤーが入力した値を直接使用 - バリデーションを撤廃
+      const userTierPoints = parseInt(currentTierPoints) || 0
+      
+      // 保存オブジェクトの完全固定 - 自由な文字での保存を許可
       const newRecord = {
         id: Date.now().toString(),
-        rank: selectedRank, // ここが "ランク未設定" になっていたら即座に修正
+        rank: selectedRank, // ← ユーザー入力をそのまま保存
         division: selectedDivision,
         rp: Number(currentTierPoints),
         date: new Date().toISOString(),
@@ -431,7 +434,7 @@ export default function MainContent() {
   // 過去5試合のRP増減の平均を計算
   const recentAverageRPChange = useMemo(() => {
     if (!gameRecords || gameRecords.length < 2) return 0
-    const recentRecords = gameRecords.slice(-6) // 直近6試合を取得（変化を計算するため）
+    const recentRecords = gameRecords.slice(-20) // 直近20試合を取得（グラフ表示用）
     const changes = []
     
     for (let i = 1; i < recentRecords.length; i++) {
