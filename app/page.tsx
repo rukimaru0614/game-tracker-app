@@ -27,15 +27,20 @@ interface GoalSettings {
 }
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const { 
     selectedGame, 
     gameRecords
   } = useGameData()
 
+  const handleAuthenticated = () => {
+    setIsAuthenticated(true)
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* 動的インポートでハイドレーションエラーを物理的に消滅 */}
-      {selectedGame && gameRecords ? <MainContent /> : <PasswordGate onAuthenticated={() => {}} />}
+      {isAuthenticated && selectedGame && gameRecords ? <MainContent /> : <PasswordGate onAuthenticated={handleAuthenticated} />}
     </div>
   )
 }
