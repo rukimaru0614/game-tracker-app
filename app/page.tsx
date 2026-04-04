@@ -333,11 +333,11 @@ export default function Home() {
     }))
   }, [gameRecords, periodFilter])
 
-  // 目標までの残りRPを計算
+  // 目標までの残りRPを計算 - 安全装置付き
   const remainingToGoal = useMemo(() => {
-    if (!goalSettings.isActive || goalSettings.targetRP <= 0) return 0
-    if (!latestRecord) return goalSettings.targetRP
-    return Math.max(0, goalSettings.targetRP - latestRecord.points)
+    if (!goalSettings?.isActive || !goalSettings?.targetRP || goalSettings.targetRP <= 0) return 0
+    if (!latestRecord?.points) return goalSettings?.targetRP || 0
+    return Math.max(0, (goalSettings.targetRP || 0) - latestRecord.points)
   }, [goalSettings, latestRecord])
 
   return (
@@ -573,11 +573,11 @@ export default function Home() {
           </div>
         )}
 
-        {/* 黄色の分析データ（TEST_DISPLAY削除） */}
+        {/* 黄色の分析データ（TEST_DISPLAY削除） - 安全装置付き */}
         <div className="my-6 bg-gray-800 rounded-lg p-4">
           <div className="text-center">
             <div className="text-3xl font-extrabold text-yellow-400">
-              あと約 {analyticsData?.estimatedMatchesToGoal || '計算中'} 試合で目標達成！
+              あと約 {analyticsData?.estimatedMatchesToGoal || 0} 試合で目標達成！
             </div>
             <div className="text-sm text-gray-400 mt-2">
               直近5試合の平均上昇RPから算出
