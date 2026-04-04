@@ -218,8 +218,8 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
         setCurrentTierPoints(value)
       } else {
         // LPランク（ダイアモンド〜アイアン）は現在のランクを維持
-        // ただし、9999以上の場合はマスターに強制アップ
-        if (numValue >= 9999) {
+        // ただし、100000以上の場合はマスターに強制アップ
+        if (numValue >= 100000) {
           setSelectedRank('マスター')
           setCurrentTierPoints('0')
         } else if (maxPoints > 0 && numValue > maxPoints) {
