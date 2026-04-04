@@ -230,6 +230,14 @@ export default function MainContent() {
     }
 
     try {
+      // デバッグ用に現在の選択状態をログ出力
+      console.log('🔍 Debug saveRecord:', {
+        selectedRank,
+        selectedDivision,
+        currentTierPoints,
+        selectedGame: selectedGame.id
+      })
+
       const newRecord: GameRecord = {
         id: Date.now().toString(),
         gameId: selectedGame.id,
@@ -245,6 +253,8 @@ export default function MainContent() {
         bestPlacement: parseInt(bestPlacement) || 0,
         timestamp: Date.now()
       }
+
+      console.log('🔍 Debug newRecord:', newRecord)
 
       await addRecord(newRecord)
       
@@ -269,10 +279,23 @@ export default function MainContent() {
     // ランク選択ベースの計算
     if (!selectedRank || !selectedGame) return 0
     
+    console.log('🔍 Debug calculateTotalPoints:', {
+      selectedRank,
+      selectedGame: selectedGame.id
+    })
+    
     const thresholds = getGameRankThresholds(selectedGame.id)
     const rankThreshold = thresholds.find(t => t.name === selectedRank)
     
-    if (!rankThreshold) return 0
+    console.log('🔍 Debug thresholds:', {
+      thresholds: thresholds.map(t => t.name),
+      rankThreshold
+    })
+    
+    if (!rankThreshold) {
+      console.log('🔍 No rankThreshold found, returning 0')
+      return 0
+    }
     
     let totalPoints = rankThreshold.minPoints
     
@@ -289,6 +312,7 @@ export default function MainContent() {
       totalPoints += parseInt(rankingPosition) || 0
     }
     
+    console.log('🔍 Debug totalPoints:', totalPoints)
     return totalPoints
   }
 
