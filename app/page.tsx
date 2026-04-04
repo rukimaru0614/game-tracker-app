@@ -37,10 +37,36 @@ export default function Home() {
     setIsAuthenticated(true)
   }
 
+  // 認証状態の初期化
+  useEffect(() => {
+    try {
+      const savedAuth = localStorage.getItem('app-authenticated')
+      const authTime = localStorage.getItem('app-auth-time')
+      
+      if (savedAuth === 'true' && authTime) {
+        const authDate = new Date(authTime)
+        const now = new Date()
+        const hoursDiff = (now.getTime() - authDate.getTime()) / (1000 * 60 * 60)
+        
+        // 24時間以内なら再認証不要
+        if (hoursDiff < 24) {
+          setIsAuthenticated(true)
+          return
+        }
+      }
+    } catch (error) {
+      console.error('localStorage read error:', error)
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* 動的インポートでハイドレーションエラーを物理的に消滅 */}
-      {isAuthenticated && selectedGame && gameRecords ? <MainContent /> : <PasswordGate onAuthenticated={handleAuthenticated} />}
+      {isAuthenticated ? (
+        selectedGame && gameRecords ? <MainContent /> : <div className="flex items-center justify-center min-h-screen"><div className="text-xl text-gray-400">読み込み中...</div></div>
+      ) : (
+        <PasswordGate onAuthenticated={handleAuthenticated} />
+      )}
     </div>
   )
 }
