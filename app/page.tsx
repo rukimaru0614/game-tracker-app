@@ -342,18 +342,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
-      {/* スマホ表示の「隠れ家」を完全破壊 - 最前面固定表示 */}
-      <div className="fixed top-20 left-0 w-full z-[9999] bg-black/80 p-4">
-        <div className="text-center">
-          <div className="text-6xl font-extrabold text-orange-500">
-            あと {remainingToGoal.toLocaleString()} RP TEST_DISPLAY
-          </div>
-          <div className="text-sm text-gray-400 mt-2">
-            目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
-          </div>
-        </div>
-      </div>
-
       {/* エラー表示 */}
       {error && (
         <div className="mb-4 bg-red-900 border border-red-700 rounded-lg p-3">
@@ -373,141 +361,232 @@ export default function Home() {
           </div>
         </div>
       )}
-      
-      {/* ヘッダー */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">ゲームトラッカー</h1>
-          <div className="flex items-center space-x-2">
-            <div className="text-sm text-gray-400">
-              連続ログイン: <span className="text-5xl font-extrabold text-yellow-400">{loginStreak}</span>日
+
+      {/* メインコンテンツ - 正しい順番で整列 */}
+      <div className="flex flex-col gap-4">
+        {/* ヘッダーとログイン日数 */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">ゲームトラッカー</h1>
+            <div className="flex items-center space-x-2">
+              <div className="text-sm text-gray-400">
+                連続ログイン: <span className="text-5xl font-extrabold text-yellow-400">{loginStreak}</span>日
+              </div>
+              <button
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className={`p-2 rounded-lg transition-colors ${
+                  showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                <BarChart3 className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              className={`p-2 rounded-lg transition-colors ${
-                showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-            >
-              <BarChart3 className="w-5 h-5" />
-            </button>
           </div>
-        </div>
-        
-        {/* ゲームセレクター */}
-        <div className="relative">
-          <button
-            onClick={() => setShowGameSelector(!showGameSelector)}
-            className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-            style={{ borderLeft: `4px solid ${selectedGame.themeColor}` }}
-          >
-            <div className="flex items-center space-x-3">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: selectedGame.themeColor }}
-              />
-              <div className="text-left">
-                <div className="font-medium">{selectedGame.name}</div>
-                <div className="text-sm text-gray-400">単位: {selectedGame.pointUnit}</div>
-              </div>
-            </div>
-            <ChevronDown className={`w-5 h-5 transition-transform ${showGameSelector ? 'rotate-180' : ''}`} />
-          </button>
           
-          {showGameSelector && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg z-10">
-              {allGames.map((game) => (
-                <button
-                  key={game.id}
-                  onClick={() => {
-                    selectGame(game.id)
-                    setShowGameSelector(false)
-                  }}
-                  className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-700 transition-colors ${
-                    selectedGame.id === game.id ? 'bg-gray-700' : ''
-                  }`}
-                  style={{ borderLeft: selectedGame.id === game.id ? `4px solid ${game.themeColor}` : 'none' }}
-                >
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: game.themeColor }}
-                  />
-                  <div className="text-left">
-                    <div className="font-medium">{game.name}</div>
-                    <div className="text-sm text-gray-400">単位: {game.pointUnit}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 目標設定表示 - 削除 */}
-
-      {latestRecord && (
-        <div className="mb-6 space-y-4">
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-400">現在のランク</span>
-              <Trophy className="w-5 h-5 text-yellow-500" />
-            </div>
-            <div className="flex items-center space-x-3 mb-3">
-              <div className="text-2xl">{currentRank?.icon}</div>
-              <div>
-                <div className={`text-xl font-bold ${currentRank?.color}`}>
-                  {currentRank?.name}
+          {/* ゲームセレクター */}
+          <div className="relative">
+            <button
+              onClick={() => setShowGameSelector(!showGameSelector)}
+              className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              style={{ borderLeft: `4px solid ${selectedGame.themeColor}` }}
+            >
+              <div className="flex items-center space-x-3">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: selectedGame.themeColor }}
+                />
+                <div className="text-left">
+                  <div className="font-medium">{selectedGame.name}</div>
+                  <div className="text-sm text-gray-400">単位: {selectedGame.pointUnit}</div>
                 </div>
-                <div className="text-sm text-gray-400">
-                  累計: {latestRecord.points.toLocaleString()} {selectedGame.pointUnit}
-                </div>
-                <div className="text-lg font-bold text-blue-400">
-                  ティア内: {currentRank?.tierPoints?.toLocaleString() || 0} / {currentRank?.maxTierPoints?.toLocaleString() || 0} {selectedGame.pointUnit}
-                </div>
-                {/* 目標RPの表示 */}
-                {goalSettings.isActive && goalSettings.targetRP > 0 && (
-                  <div className="text-sm text-yellow-400 mt-1">
-                    目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
-                  </div>
-                )}
               </div>
-            </div>
+              <ChevronDown className={`w-5 h-5 transition-transform ${showGameSelector ? 'rotate-180' : ''}`} />
+            </button>
             
-            {/* ランク進捗バー */}
-            {!currentRank?.isTopRank && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-gray-400">
-                  <span>次のランクまで</span>
-                  <span>{currentRank?.pointsToNext.toLocaleString()} {selectedGame.pointUnit}</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${(currentRank?.progress || 0) * 100}%`,
-                      backgroundColor: selectedGame.themeColor
+            {showGameSelector && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg z-10">
+                {allGames.map((game) => (
+                  <button
+                    key={game.id}
+                    onClick={() => {
+                      selectGame(game.id)
+                      setShowGameSelector(false)
                     }}
-                  />
-                </div>
+                    className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-700 transition-colors ${
+                      selectedGame.id === game.id ? 'bg-gray-700' : ''
+                    }`}
+                    style={{ borderLeft: selectedGame.id === game.id ? `4px solid ${game.themeColor}` : 'none' }}
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: game.themeColor }}
+                    />
+                    <div className="text-left">
+                      <div className="font-medium">{game.name}</div>
+                      <div className="text-sm text-gray-400">単位: {game.pointUnit}</div>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
         </div>
-      )}
 
-      {/* 目標表示（無条件強制表示・全条件撤廃） */}
-      <div className="mb-6 bg-gray-800 rounded-lg p-6 relative z-50">
-        <div className="text-center">
-          <div className="text-6xl font-extrabold text-orange-500">
-            あと {remainingToGoal.toLocaleString()} RP TEST_DISPLAY
+        {/* 現在のランク表示 */}
+        {latestRecord && (
+          <div className="mb-6 space-y-4">
+            <div className="bg-gray-800 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-gray-400">現在のランク</span>
+                <Trophy className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="text-2xl">{currentRank?.icon}</div>
+                <div>
+                  <div className={`text-xl font-bold ${currentRank?.color}`}>
+                    {currentRank?.name}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    累計: {latestRecord.points.toLocaleString()} {selectedGame.pointUnit}
+                  </div>
+                  <div className="text-lg font-bold text-blue-400">
+                    ティア内: {currentRank?.tierPoints?.toLocaleString() || 0} / {currentRank?.maxTierPoints?.toLocaleString() || 0} {selectedGame.pointUnit}
+                  </div>
+                  {/* 目標RPの表示 */}
+                  {goalSettings.isActive && goalSettings.targetRP > 0 && (
+                    <div className="text-sm text-yellow-400 mt-1">
+                      目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* ランク進捗バー */}
+              {!currentRank?.isTopRank && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs text-gray-400">
+                    <span>次のランクまで</span>
+                    <span>{currentRank?.pointsToNext.toLocaleString()} {selectedGame.pointUnit}</span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${(currentRank?.progress || 0) * 100}%`,
+                        backgroundColor: selectedGame.themeColor
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="text-sm text-gray-400 mt-2">
-            目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
+        )}
+
+        {/* オレンジのデカ文字（TEST_DISPLAY削除） */}
+        <div className="my-6 bg-gray-800 rounded-lg p-6">
+          <div className="text-center">
+            <div className="text-6xl font-extrabold text-orange-500">
+              あと {remainingToGoal.toLocaleString()} RP
+            </div>
+            <div className="text-sm text-gray-400 mt-2">
+              目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 記録入力フォーム */}
-      <div className="mb-6 bg-gray-800 rounded-lg p-4">
+      {/* グラフ（チャート） */}
+        {chartData.length > 0 && (
+          <div className="mb-6 bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">ポイント推移</h2>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setPeriodFilter('all')}
+                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                    periodFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                >
+                  全期間
+                </button>
+                <button
+                  onClick={() => setPeriodFilter('week')}
+                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                    periodFilter === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                >
+                  1週間
+                </button>
+                <button
+                  onClick={() => setPeriodFilter('month')}
+                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                    periodFilter === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                >
+                  1ヶ月
+                </button>
+              </div>
+            </div>
+            
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis 
+                  dataKey="displayDate" 
+                  stroke="#9ca3af"
+                  tick={{ fill: '#9ca3af' }}
+                />
+                <YAxis 
+                  stroke="#9ca3af"
+                  tick={{ fill: '#9ca3af' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px'
+                  }}
+                  labelStyle={{ color: '#f3f4f6' }}
+                  itemStyle={{ color: '#f3f4f6' }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="points" 
+                  stroke={selectedGame.themeColor}
+                  strokeWidth={3}
+                  dot={{ fill: selectedGame.themeColor, r: 6 }}
+                  activeDot={{ r: 8 }}
+                  name="ポイント"
+                />
+                {goalLines.map((line) => (
+                  <ReferenceLine
+                    key={line.key}
+                    y={line.value}
+                    stroke={line.color}
+                    strokeDasharray="5 5"
+                    label={line.label}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* 黄色の分析データ（TEST_DISPLAY削除） */}
+        <div className="my-6 bg-gray-800 rounded-lg p-4">
+          <div className="text-center">
+            <div className="text-3xl font-extrabold text-yellow-400">
+              あと約 {analyticsData?.estimatedMatchesToGoal || '計算中'} 試合で目標達成！
+            </div>
+            <div className="text-sm text-gray-400 mt-2">
+              直近5試合の平均上昇RPから算出
+            </div>
+          </div>
+        </div>
+
+        {/* 保存ボタンなどの操作パネル */}
+        <div className="mb-6 bg-gray-800 rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">新しい記録</h2>
           <button
@@ -796,10 +875,10 @@ export default function Home() {
       )}
 
       {/* 推定試合数表示（無条件強制表示・全条件撤廃） */}
-      <div className="fixed top-40 left-0 w-full z-[9999] bg-black/80 p-4">
+      <div className="my-6 bg-gray-800 rounded-lg p-4">
         <div className="text-center">
           <div className="text-3xl font-extrabold text-yellow-400">
-            あと約 {analyticsData?.estimatedMatchesToGoal || '計算中'} 試合で目標達成！ TEST_DISPLAY
+            あと約 {analyticsData?.estimatedMatchesToGoal || '計算中'} 試合で目標達成！
           </div>
           <div className="text-sm text-gray-400 mt-2">
             直近5試合の平均上昇RPから算出
