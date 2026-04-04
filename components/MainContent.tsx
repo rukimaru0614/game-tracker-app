@@ -193,23 +193,49 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
   return apexMaxPoints[rank]?.[division] || 0
 }
 
-// ティア内RPの入力検証
-const handleTierPointsChange = (value: string) => {
-  const numValue = parseInt(value) || 0
-  const maxPoints = getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)
-  
-  if (maxPoints > 0 && numValue > maxPoints) {
-    // 上限を超えた場合は警告して最大値に設定
-    if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
-      alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
+// MP自動ランクアップロジック（ST6専用）
+  const handleTierPointsChange = (value: string) => {
+    const numValue = parseInt(value) || 0
+    const maxPoints = getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)
+    
+    // ST6のMP自動ランクアップ
+    if (selectedGame?.id === 'street-fighter-6') {
+      if (numValue >= 2200) {
+        setSelectedRank('アルティメットマスター')
+        setCurrentTierPoints('0')
+      } else if (numValue >= 1900) {
+        setSelectedRank('グランドマスター')
+        setCurrentTierPoints('0')
+      } else if (numValue >= 1600) {
+        setSelectedRank('ハイマスター')
+        setCurrentTierPoints('0')
+      } else {
+        // 通常の入力検証
+        if (maxPoints > 0 && numValue > maxPoints) {
+          if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
+            alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
+          } else {
+            alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
+          }
+          setCurrentTierPoints(maxPoints.toString())
+        } else {
+          setCurrentTierPoints(value)
+        }
+      }
     } else {
-      alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
+      // 他のゲームの通常処理
+      if (maxPoints > 0 && numValue > maxPoints) {
+        if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
+          alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
+        } else {
+          alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
+        }
+        setCurrentTierPoints(maxPoints.toString())
+      } else {
+        setCurrentTierPoints(value)
+      }
     }
-    setCurrentTierPoints(maxPoints.toString())
-  } else {
-    setCurrentTierPoints(value)
   }
-}
 
   // useEffect 完了まで何も出さない - ブラウザの準備が100%整うまでローディング画面以外は一切描画させない
   useEffect(() => {
@@ -888,9 +914,13 @@ const handleTierPointsChange = (value: string) => {
                   className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
                 >
                   <option value="">ランクを選択</option>
-                  {selectedGame && (getGameRankGroups(selectedGame.id) || []).map((rank: any) => (
-                    <option key={rank.name} value={rank.name}>{rank.name}</option>
-                  ))}
+                  {(() => {
+                    const ranks = getGameRankGroups(selectedGame.id) || []
+                    console.log("Available Ranks:", ranks)
+                    return ranks.map((rank: any) => (
+                      <option key={rank.name} value={rank.name}>{rank.name}</option>
+                    ))
+                  })()}
                 </select>
               </div>
               {selectedRank && (getGameValidDivisions(selectedGame?.id || '', selectedRank) || []).length > 0 && (

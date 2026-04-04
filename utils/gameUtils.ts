@@ -44,7 +44,9 @@ export const getGameRankGroups = (gameId: string) => {
       PLATINUM: { name: 'プラチナ', icon: '🥈' },
       DIAMOND: { name: 'ダイヤモンド', icon: '💎' },
       MASTER: { name: 'マスター', icon: '💜' },
-      LEGEND: { name: 'レジェンド', icon: '👑' }
+      HIGH_MASTER: { name: 'ハイマスター', icon: '💜' },
+      GRAND_MASTER: { name: 'グランドマスター', icon: '💜' },
+      ULTIMATE_MASTER: { name: 'アルティメットマスター', icon: '�' }
     }
   }
 
@@ -54,7 +56,7 @@ export const getGameRankGroups = (gameId: string) => {
 }
 
 export const isGameRankingBased = (rank: string): boolean => {
-  const rankingBasedRanks = ['マスター', 'プレデター', 'イモータル1', 'イモータル2', 'イモータル3', 'ラディアント', 'マスター', 'グランドマスター', 'チャレンジャー', 'マスター', 'レジェンド']
+  const rankingBasedRanks = ['マスター', 'プレデター', 'イモータル1', 'イモータル2', 'イモータル3', 'ラディアント', 'マスター', 'ハイマスター', 'グランドマスター', 'チャレンジャー', 'マスター', 'レジェンド', 'アルティメットマスター']
   return rankingBasedRanks.includes(rank)
 }
 
