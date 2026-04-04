@@ -307,20 +307,25 @@ export default function Home() {
     // グラフクリック時の処理（空関数）
   }
 
-  // データ同期のためのuseEffect
+  // データ同期のためのuseEffect - 認証直後の安全対策
   useEffect(() => {
     // gameRecordsが更新されたら、全ての計算を再実行
-    if (gameRecords.length > 0) {
+    if (gameRecords && gameRecords.length > 0) {
       const latest = gameRecords[gameRecords.length - 1]
-      // 強制的に再計算をトリガー
-      console.log('Data sync triggered:', latest.points)
+      // 認証直後のデータ準備待ち - 安全チェック
+      if (latest && latest.points && latest.id) {
+        console.log('🔄 Data sync triggered:', latest.points)
+      }
     }
   }, [gameRecords])
 
-  // データの単一ソース化 - 最新レコードを常に取得
+  // データの単一ソース化 - 最新レコードを常に取得 - 超安全対策
   const latestRecord = useMemo(() => {
-    if (gameRecords.length === 0) return null
-    return gameRecords[gameRecords.length - 1]
+    if (!gameRecords || gameRecords.length === 0) return null
+    const latest = gameRecords[gameRecords.length - 1]
+    // 認証直後のデータ検証 - 完全防備
+    if (!latest || !latest.points || !latest.id || !latest.timestamp) return null
+    return latest
   }, [gameRecords])
   
   const dailyChange = useMemo(() => getDailyChange(), [gameRecords])
@@ -328,8 +333,12 @@ export default function Home() {
   // 新しい物理的判定関数を使用して現在のランクを計算
   const currentRank = useMemo(() => latestRecord ? calculateRankFromTotalRP(latestRecord.points) : null, [latestRecord])
   
-  // アナリティクスデータの計算
-  const analyticsData = useMemo(() => calculateAnalyticsData(gameRecords, goalSettings.targetRP), [gameRecords, goalSettings.targetRP])
+  // アナリティクスデータの計算 - 認証直後の安全対策
+  const analyticsData = useMemo(() => {
+    // 認証直後のデータ準備待ち - 完全防備
+    if (!gameRecords || gameRecords.length === 0) return null
+    return calculateAnalyticsData(gameRecords, goalSettings?.targetRP || 0)
+  }, [gameRecords, goalSettings?.targetRP])
   const goalLines = useMemo(() => getGoalLines(gameRecords.length), [gameRecords.length])
   
   // グラフデータの重複排除と同期
@@ -368,10 +377,11 @@ export default function Home() {
     }))
   }, [gameRecords, periodFilter])
 
-  // 目標までの残りRPを計算 - 安全装置付き
+  // 目標までの残りRPを計算 - 超強力安全装置付き
   const remainingToGoal = useMemo(() => {
+    // 認証直後のデータ準備待ち - 完全防備
+    if (!latestRecord || !latestRecord.points || !latestRecord.id) return 0
     if (!goalSettings?.isActive || !goalSettings?.targetRP || goalSettings.targetRP <= 0) return 0
-    if (!latestRecord?.points) return goalSettings?.targetRP || 0
     return Math.max(0, (goalSettings.targetRP || 0) - latestRecord.points)
   }, [goalSettings, latestRecord])
 
