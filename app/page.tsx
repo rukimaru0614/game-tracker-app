@@ -954,15 +954,10 @@ export default function Home() {
         </div>
       )}
 
-      {/* フッター - PCでのクレジット表示 */}
-      <div className="hidden md:block fixed bottom-4 right-4 text-xs text-gray-500 z-10">
-        <div className="bg-gray-800 bg-opacity-90 px-2 py-1 rounded">
-          Developed by IR | v1.2.0
-        </div>
       </div>
-      
-      {/* モバイル用最下部余白 */}
-      <div className="md:hidden pb-64"></div>
+
+      {/* ボトムナビゲーション */}
+      <BottomNav />
     </div>
   )
 }
