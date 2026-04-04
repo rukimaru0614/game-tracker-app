@@ -1,17 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Lock, Eye, EyeOff } from 'lucide-react'
+import { Lock, Mail } from 'lucide-react'
 
-const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_PASSWORD || 'IR614'
+const CORRECT_PASSWORD = 'IR614'
 
 export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
+  // ハイドレーションエラー対策
   useEffect(() => {
+    setIsMounted(true)
+    
+    // 永続的なログイン状態チェック
     try {
       const savedAuth = localStorage.getItem('app-authenticated')
       const authTime = localStorage.getItem('app-auth-time')
@@ -19,122 +23,162 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
       if (savedAuth === 'true' && authTime) {
         const authDate = new Date(authTime)
         const now = new Date()
-        const hoursDiff = (now.getTime() - authDate.getTime()) / (1000 * 60 * 60)
+        const daysDiff = (now.getTime() - authDate.getTime()) / (1000 * 60 * 60 * 24)
         
-        // 24時間以内なら再認証不要
-        if (hoursDiff < 24) {
-          setIsAuthenticated(true)
+        // 7日以内なら自動認証
+        if (daysDiff < 7) {
           onAuthenticated()
           return
         }
       }
     } catch (error) {
       console.error('localStorage read error:', error)
-      // localStorageが読めなくても認証画面を表示
     }
   }, [onAuthenticated])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
     
-    console.log('🔐 Password submitted:', password)
-    
-    if (password === CORRECT_PASSWORD) {
-      console.log('🔐 Password correct, setting authenticated state')
-      setIsAuthenticated(true)
-      
-      // localStorage操作をtry-catchで囲む
-      try {
+    try {
+      if (password === CORRECT_PASSWORD) {
+        // 認証成功
         localStorage.setItem('app-authenticated', 'true')
         localStorage.setItem('app-auth-time', new Date().toISOString())
-        console.log('✅ Authentication saved to localStorage')
-      } catch (error) {
-        console.error('localStorage error:', error)
-        // localStorageが使えなくても認証は続行
+        onAuthenticated()
+      } else {
+        setError(true)
+        setTimeout(() => setError(false), 2000)
       }
-      
-      // ブラウザ履歴を置き換えてパスワード画面に戻らないようにする
-      try {
-        window.history.replaceState(null, '', '/')
-      } catch (error) {
-        console.error('History API error:', error)
-        // 履歴操作ができなくても認証は続行
-      }
-      
-      // 即座にコールバックを実行
-      console.log('🔐 Executing authentication callback')
-      onAuthenticated()
-      console.log('✅ Authentication callback executed')
-    } else {
-      console.log('🔐 Password incorrect')
+    } catch (error) {
+      console.error('Authentication error:', error)
       setError(true)
       setTimeout(() => setError(false), 2000)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  if (isAuthenticated) {
+  // ハイドレーションエラー対策 - マウント前は何も表示しない
+  if (!isMounted) {
     return null
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-800 rounded-lg p-6 max-w-sm w-full">
-        <div className="flex items-center justify-center mb-4">
-          <Lock className="w-8 h-8 text-blue-500" />
-        </div>
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      {/* 動的なポリゴン背景 */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-2000"></div>
+        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-4000"></div>
         
-        <h2 className="text-xl font-bold text-center mb-4">認証が必要です</h2>
-        <p className="text-gray-400 text-sm text-center mb-6">
-          合言葉を入力してアプリにアクセスしてください
-        </p>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <label htmlFor="password-input" className="sr-only">合言葉</label>
-            <input
-              id="password-input"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="合言葉"
-              className={`w-full px-3 py-2 bg-gray-700 rounded-lg text-white pr-10 ${
-                error ? 'border border-red-500' : 'border border-gray-600'
-              }`}
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                console.log('Password visibility toggle clicked, current state:', showPassword)
-                setShowPassword(!showPassword)
-              }}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors p-1"
-              aria-label={showPassword ? 'パスワードを非表示' : 'パスワードを表示'}
-              style={{ touchAction: 'manipulation' }}
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-          
-          {error && (
-            <p className="text-red-500 text-sm text-center">合言葉が正しくありません</p>
-          )}
-          
-          <button
-            type="submit"
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
-          >
-            認証
-          </button>
-        </form>
-        
-        <p className="text-xs text-gray-500 text-center mt-4">
-          ヒント: 開発者のイニシャル＋数字
-        </p>
+        {/* グラデーションオーバーレイ */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
       </div>
+
+      {/* メインコンテンツ */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
+        <div className="w-full max-w-md">
+          {/* ガラスのような質感のカード */}
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
+            {/* ヘッダー */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl mb-4 shadow-lg">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-2">ようこそ</h1>
+              <p className="text-white/80 text-lg">パスワードを入力してください</p>
+            </div>
+
+            {/* フォーム */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-2">
+                  パスワード
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-white/60" />
+                  </div>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm transition-all duration-200"
+                    placeholder="パスワードを入力"
+                    disabled={isLoading}
+                  />
+                </div>
+                {error && (
+                  <p className="mt-2 text-sm text-red-400">パスワードが正しくありません</p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    認証中...
+                  </div>
+                ) : (
+                  'ログイン'
+                )}
+              </button>
+            </form>
+
+            {/* Googleログインボタン（今後の実装用） */}
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/20"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-transparent text-white/60">または</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled
+                className="mt-4 w-full bg-white/10 border border-white/20 text-white py-3 px-4 rounded-xl font-semibold hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm flex items-center justify-center"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Googleでログイン（準備中）
+              </button>
+            </div>
+          </div>
+
+          {/* フッター */}
+          <div className="text-center mt-8">
+            <p className="text-white/60 text-sm">
+              © 2024 Game Tracker. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.2;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.3;
+            transform: scale(1.05);
+          }
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   )
 }
