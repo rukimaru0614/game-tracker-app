@@ -22,7 +22,7 @@ export default function History() {
     if (currentIndex === 0) return 0
     const current = gameRecords[currentIndex]
     const previous = gameRecords[currentIndex - 1]
-    return current.points - previous.points
+    return current.rp - previous.rp
   }
 
   const formatDateTime = (record: GameRecord) => {
@@ -73,7 +73,8 @@ export default function History() {
             {gameRecords.slice().reverse().map((record, index) => {
               const reversedIndex = gameRecords.length - 1 - index
               const dailyChange = getDailyChange(reversedIndex)
-              const rank = getRank(record.points)
+              const rank = getRank(record.rp)
+              const change = reversedIndex > 0 ? record.rp - gameRecords[reversedIndex - 1].rp : 0
               
               return (
                 <div
@@ -94,7 +95,7 @@ export default function History() {
                             <span>{rank.name}</span>
                           </div>
                           <div className="text-xl font-bold">
-                            {record.points.toLocaleString()} {selectedGame.pointUnit}
+                            {record.rp.toLocaleString()} {selectedGame.pointUnit}
                           </div>
                         </div>
                         {reversedIndex > 0 && (

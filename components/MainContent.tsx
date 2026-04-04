@@ -25,10 +25,10 @@ export const calculateSafeRemainingToGoal = (latestRecord: GameRecord | null, go
   let result = 0; // 計算結果の初期値を完全に固定
   
   try {
-    if (!latestRecord || !latestRecord.points || !latestRecord.id) return result;
+    if (!latestRecord || !latestRecord.rp || !latestRecord.id) return result;
     if (!goalSettings?.isActive || !goalSettings?.targetRP || goalSettings.targetRP <= 0) return result;
     
-    result = Math.max(0, (goalSettings.targetRP || 0) - latestRecord.points);
+    result = Math.max(0, (goalSettings.targetRP || 0) - Number(latestRecord.rp));
   } catch (error) {
     console.error('calculateSafeRemainingToGoal error:', error);
   }
@@ -89,7 +89,7 @@ const handleTierPointsChange = (value: string, setCurrentTierPoints: any, select
     } else {
       alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
     }
-    setCurrentTierPoints(maxPoints.toString())
+    setCurrentTierPoints(numValue.toString())
   } else {
     setCurrentTierPoints(value)
   }
@@ -347,7 +347,7 @@ export default function MainContent() {
     
     const firstRecord = todayRecords[0]
     const lastRecord = todayRecords[todayRecords.length - 1]
-    return lastRecord.points - firstRecord.points
+    return Number(lastRecord.rp) - Number(firstRecord.rp)
   }
 
   const formatDateTime = (record: GameRecord) => {
@@ -371,21 +371,22 @@ export default function MainContent() {
 
   const saveRecord = async () => {
     try {
+      // プレイヤーが入力した値を直接使用
+      const userTierPoints = parseInt(currentTierPoints) || 0
+      
       const newRecord: GameRecord = {
         id: Date.now().toString(),
         timestamp: Date.now(),
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
-        points: calculateTotalPoints(),
+        rp: userTierPoints, // ← プレイヤー入力値を直接使用
         currentTier: selectedRank || '入力済み',
         division: selectedDivision,
-        points: calculateTotalPoints(),
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
         memo: memo,
         matches: parseInt(matches) || 0,
         bestPlacement: parseInt(bestPlacement) || 0,
-        timestamp: Date.now()
       }
 
       await addRecord(newRecord)
@@ -412,14 +413,14 @@ export default function MainContent() {
     if (!gameRecords || gameRecords.length === 0) return null
     const latest = gameRecords[gameRecords.length - 1]
     // 認証直後のデータ検証 - 完全防備
-    if (!latest || !latest.points || !latest.id || !latest.timestamp) return null
+    if (!latest || !latest.rp || !latest.id || !latest.timestamp) return null
     return latest
   }, [gameRecords])
   
   const dailyChange = useMemo(() => getDailyChange(), [gameRecords])
   
   // 新しい物理的判定関数を使用して現在のランクを計算
-  const currentRank = useMemo(() => latestRecord ? calculateRankFromTotalRP(latestRecord.points) : null, [latestRecord])
+  const currentRank = useMemo(() => latestRecord ? calculateRankFromTotalRP(Number(latestRecord.rp)) : null, [latestRecord])
   
   // 過去5試合のRP増減の平均を計算
   const recentAverageRPChange = useMemo(() => {
@@ -428,7 +429,7 @@ export default function MainContent() {
     const changes = []
     
     for (let i = 1; i < recentRecords.length; i++) {
-      const change = recentRecords[i].points - recentRecords[i-1].points
+      const change = Number(recentRecords[i].rp) - Number(recentRecords[i-1].rp)
       changes.push(change)
     }
     
@@ -559,14 +560,14 @@ export default function MainContent() {
               <div>
                 <p className="text-sm text-gray-400">現在のランク</p>
                 <p className="text-lg font-bold text-white">
-                  {latestRecord ? getRank(latestRecord.points).name : 'データなし'}
+                  {latestRecord ? getRank(Number(latestRecord.rp)).name : 'データ入力待ち'}
                 </p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-400">現在RP</p>
               <p className="text-lg font-bold text-yellow-400">
-                {latestRecord ? latestRecord.points.toLocaleString() : '0'}
+                {latestRecord ? Number(latestRecord.rp).toLocaleString() : 'データ入力待ち'}
               </p>
             </div>
           </div>
@@ -871,16 +872,15 @@ export default function MainContent() {
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {getRank(latestRecord.points).name}
+                    {getRank(Number(latestRecord.rp)).name}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-400">次のランクまで</p>
                   <p className="text-lg font-bold text-green-400">
-                    {getRank(latestRecord.points).pointsToNext > 0 
-                      ? `${getRank(latestRecord.points).pointsToNext} RP`
-                      : '最高ランク'
-                    }
+                    {getRank(Number(latestRecord.rp)).pointsToNext > 0 
+                      ? `${getRank(Number(latestRecord.rp)).pointsToNext} RP`
+                      : '最高ランク'}
                   </p>
                 </div>
               </div>
@@ -907,11 +907,11 @@ export default function MainContent() {
                 <div className="w-full bg-gray-600 rounded-full h-2">
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${getRank(latestRecord.points).progress * 100}%` }}
+                    style={{ width: `${getRank(Number(latestRecord.rp)).progress * 100}%` }}
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  {Math.round(getRank(latestRecord.points).progress * 100)}% 完了
+                  {Math.round(getRank(Number(latestRecord.rp)).progress * 100)}% 完了
                 </p>
               </div>
             </div>
@@ -929,7 +929,7 @@ export default function MainContent() {
                   <div className="bg-gray-600 rounded p-3">
                     <p className="text-sm text-gray-400">現在のRP</p>
                     <p className="text-2xl font-bold">
-                      {latestRecord ? latestRecord.points.toLocaleString() : '0'}
+                      {latestRecord ? Number(latestRecord.rp).toLocaleString() : 'データ入力待ち'}
                     </p>
                   </div>
                 </div>
@@ -972,12 +972,12 @@ export default function MainContent() {
                     labelStyle={{ color: "#F3F4F6" }}
                     formatter={(value: any, name: any) => [
                       `${name}: ${value}`,
-                      `RP: ${value?.points || 0}`
+                      `RP: ${value?.rp || 0}`
                     ]}
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="points" 
+                    dataKey="rp" 
                     stroke="#3B82F6" 
                     strokeWidth={2}
                     dot={{ fill: "#3B82F6", r: 4 }}

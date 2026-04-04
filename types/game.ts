@@ -21,7 +21,7 @@ export interface GameRecord {
   date: string
   time: string
   timestamp: number
-  points: number // 累計RP
+  rp: number // 累計RP
   tierPoints: number // ティア内RP
   currentTier: string // 現在のランク名
   division?: string // ディビジョン
