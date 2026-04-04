@@ -414,14 +414,8 @@ export default function MainContent() {
     }
   }
 
-  // データの単一ソース化 - 最新レコードを常に取得 - 超安全対策
-  const latestRecord = useMemo(() => {
-    if (!gameRecords || gameRecords.length === 0) return null
-    const latest = gameRecords[gameRecords.length - 1]
-    // 認証直後のデータ検証 - 完全防備
-    if (!latest || !latest.rp || !latest.id || !latest.timestamp) return null
-    return latest
-  }, [gameRecords])
+  // 最新データの定義を修正 - 配列の最後＝最新
+  const latestRecord = gameRecords[gameRecords.length - 1]
   
   const dailyChange = useMemo(() => getDailyChange(), [gameRecords])
   
@@ -597,7 +591,7 @@ export default function MainContent() {
               <div>
                 <p className="text-sm text-gray-400">現在のランク</p>
                 <p className="text-lg font-bold text-white">
-                  {latestRecord?.rank || "データなし"} {latestRecord?.division || ""}
+                  {latestRecord ? `${latestRecord.rank} ${latestRecord.division}` : "記録を追加してください"}
                 </p>
               </div>
             </div>
@@ -909,7 +903,7 @@ export default function MainContent() {
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {latestRecord?.rank || "データなし"} {latestRecord?.division || ""}
+                    {latestRecord ? `${latestRecord.rank} ${latestRecord.division}` : "記録を追加してください"}
                   </p>
                 </div>
                 <div className="text-right">
