@@ -100,6 +100,9 @@ interface GraphDataPoint {
   division?: string
 }
 
+// 選択されたデータポイントの状態
+const [selectedDataPoint, setSelectedDataPoint] = useState<GraphDataPoint | null>(null)
+
 // グラフ期間フィルター
 const [graphPeriod, setGraphPeriod] = useState<GraphPeriod>('week')
 
@@ -1035,6 +1038,34 @@ const handleTierPointsChange = (value: string) => {
             </div>
           </div>
           
+          {/* 選択されたデータポイントの詳細表示 */}
+          {selectedDataPoint && (
+            <div className="mb-4 bg-gray-700 rounded-lg p-3 border-l-4 border-yellow-400">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-gray-400">選択された記録</div>
+                  <div className="text-lg font-semibold text-white">
+                    {selectedDataPoint.date} {selectedDataPoint.time}
+                  </div>
+                  <div className="text-sm text-gray-300">
+                    ランク: {selectedDataPoint.rank} {selectedDataPoint.division || ''}
+                  </div>
+                  <div className="text-lg font-bold text-blue-400">
+                    {selectedDataPoint.points.toLocaleString()} RP
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedDataPoint(null)}
+                  className="p-1 text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
           {showAnalytics && (
             <div className="bg-gray-700 rounded-lg p-4">
               <div className="h-80 relative">
@@ -1135,16 +1166,19 @@ const handleTierPointsChange = (value: string) => {
                             const range = maxPoints - minPoints || 1
                             const x = 40 + (index / (data.length - 1 || 1)) * 720
                             const y = 40 + (1 - (point.points - minPoints) / range) * 240
+                            const isSelected = selectedDataPoint?.timestamp === point.timestamp
                             
                             return (
                               <g key={`point-${point.timestamp}-${index}`}>
                                 <circle
                                   cx={x}
                                   cy={y}
-                                  r="4"
-                                  fill="#3b82f6"
+                                  r={isSelected ? "6" : "4"}
+                                  fill={isSelected ? "#fbbf24" : "#3b82f6"}
                                   stroke="#1f2937"
                                   strokeWidth="2"
+                                  className="cursor-pointer hover:fill-blue-400 transition-colors"
+                                  onClick={() => setSelectedDataPoint(point)}
                                 />
                                 <title>
                                   {point.date} {point.time}: {point.points}RP ({point.rank})
