@@ -607,6 +607,126 @@ export default function MainContent() {
             </button>
           </div>
           
+          {/* 記録入力フォーム */}
+          <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+            <h3 className="text-md font-semibold mb-3">記録を入力</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="date" className="block text-sm font-medium mb-2">日付</label>
+                <input
+                  id="date"
+                  name="date"
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                />
+              </div>
+              <div>
+                <label htmlFor="rank" className="block text-sm font-medium mb-2">ランク</label>
+                <select
+                  id="rank"
+                  name="rank"
+                  value={selectedRank}
+                  onChange={(e) => setSelectedRank(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                >
+                  <option value="">ランクを選択</option>
+                  {selectedGame && getGameRankGroups(selectedGame.id).map((rank) => (
+                    <option key={rank.name} value={rank.name}>{rank.name}</option>
+                  ))}
+                </select>
+              </div>
+              {selectedRank && getGameValidDivisions(selectedGame.id, selectedRank).length > 0 && (
+                <div>
+                  <label htmlFor="division" className="block text-sm font-medium mb-2">エディション</label>
+                  <select
+                    id="division"
+                    name="division"
+                    value={selectedDivision}
+                    onChange={(e) => setSelectedDivision(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                  >
+                    <option value="">エディションを選択</option>
+                    {getGameValidDivisions(selectedGame.id, selectedRank).map((division) => (
+                      <option key={division} value={division}>{division}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {isGameRankingBased(selectedRank) && (
+                <div>
+                  <label htmlFor="ranking-position" className="block text-sm font-medium mb-2">順位</label>
+                  <input
+                    id="ranking-position"
+                    name="ranking-position"
+                    type="number"
+                    value={rankingPosition}
+                    onChange={(e) => setRankingPosition(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                    placeholder="例: 1500"
+                  />
+                </div>
+              )}
+              <div>
+                <label htmlFor="tier-points" className="block text-sm font-medium mb-2">ティア内RP</label>
+                <input
+                  id="tier-points"
+                  name="tier-points"
+                  type="number"
+                  value={currentTierPoints}
+                  onChange={(e) => setCurrentTierPoints(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                  placeholder="例: 250"
+                />
+              </div>
+              <div>
+                <label htmlFor="matches" className="block text-sm font-medium mb-2">マッチ数</label>
+                <input
+                  id="matches"
+                  name="matches"
+                  type="number"
+                  value={matches}
+                  onChange={(e) => setMatches(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                  placeholder="例: 5"
+                />
+              </div>
+              <div>
+                <label htmlFor="best-placement" className="block text-sm font-medium mb-2">最高順位</label>
+                <input
+                  id="best-placement"
+                  name="best-placement"
+                  type="number"
+                  value={bestPlacement}
+                  onChange={(e) => setBestPlacement(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                  placeholder="例: 1"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="memo" className="block text-sm font-medium mb-2">振り返りメモ</label>
+                <textarea
+                  id="memo"
+                  name="memo"
+                  value={memo}
+                  onChange={(e) => setMemo(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                  rows={3}
+                  placeholder="今日の試合の振り返り..."
+                />
+              </div>
+              <div className="md:col-span-2 flex items-end">
+                <button
+                  onClick={saveRecord}
+                  className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-colors"
+                >
+                  記録を保存
+                </button>
+              </div>
+            </div>
+          </div>
+          
           {/* 目標設定フォーム */}
           {showGoalForm && (
             <div className="mb-4 p-4 bg-gray-700 rounded-lg">
