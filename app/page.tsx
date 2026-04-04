@@ -483,21 +483,7 @@ export default function Home() {
 
       {/* 目標表示（強制表示・text-6xl） - final-fix-123 */}
       {goalSettings.isActive && goalSettings.targetRP > 0 && remainingToGoal > 0 && (
-        <div className="mb-6 bg-gray-800 rounded-lg p-6 block md:hidden">
-          <div className="text-center">
-            <div className="text-6xl font-extrabold text-orange-500">
-              あと {remainingToGoal.toLocaleString()} RP
-            </div>
-            <div className="text-sm text-gray-400 mt-2">
-              目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PC版目標表示 */}
-      {goalSettings.isActive && goalSettings.targetRP > 0 && remainingToGoal > 0 && (
-        <div className="mb-6 bg-gray-800 rounded-lg p-6 hidden md:block">
+        <div className="mb-6 bg-gray-800 rounded-lg p-6">
           <div className="text-center">
             <div className="text-6xl font-extrabold text-orange-500">
               あと {remainingToGoal.toLocaleString()} RP
@@ -800,21 +786,7 @@ export default function Home() {
 
       {/* 推定試合数表示（グラフのすぐ下・text-3xl） - final-fix-123 */}
       {goalSettings.isActive && analyticsData && analyticsData.estimatedMatchesToGoal > 0 && (
-        <div className="mb-6 bg-gray-800 rounded-lg p-4 block md:hidden">
-          <div className="text-center">
-            <div className="text-3xl font-extrabold text-yellow-400">
-              あと約 {analyticsData.estimatedMatchesToGoal} 試合で目標達成！
-            </div>
-            <div className="text-sm text-gray-400 mt-2">
-              直近5試合の平均上昇RPから算出
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PC版推定試合数表示 */}
-      {goalSettings.isActive && analyticsData && analyticsData.estimatedMatchesToGoal > 0 && (
-        <div className="mb-6 bg-gray-800 rounded-lg p-4 hidden md:block">
+        <div className="mb-6 bg-gray-800 rounded-lg p-4">
           <div className="text-center">
             <div className="text-3xl font-extrabold text-yellow-400">
               あと約 {analyticsData.estimatedMatchesToGoal} 試合で目標達成！
