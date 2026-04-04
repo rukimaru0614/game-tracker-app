@@ -58,8 +58,14 @@ export default function Home() {
   const [loginStreak, setLoginStreak] = useState(0)
   const [lastLoginDate, setLastLoginDate] = useState<string | null>(null)
   
-  // データ洗浄と重複削除（初回読み込み時のみ実行）- 古いデータ無視
+  // データ洗浄と重複削除（初回読み込み時のみ実行）- 超緊急クリーンアップ
   useEffect(() => {
+    // 超緊急：localStorageを全消去して真っさらな状態に
+    if (typeof window !== 'undefined') { 
+      localStorage.clear(); 
+      console.log('🚨 NUCLEAR OPTION: All localStorage cleared for fresh start');
+    }
+    
     try {
       // 古いデータを一度無視して、新しく始める
       const storedData = localStorage.getItem('gameData')
@@ -73,8 +79,8 @@ export default function Home() {
             if (record.points === 0 && record.currentTier === 'ルーキー') return false
             if (record.points === 15450) return false
             if (record.points === 0 && record.currentTier === '入力済み') return false
-            // 必須フィールドの検証
-            return record.timestamp && record.date && typeof record.points === 'number'
+            // 必須フィールドの検証 - 徹底した安全チェック
+            return record.timestamp && record.date && typeof record.points === 'number' && record.id && record.gameId
           })
           
           // タイムスタンプで重複削除
@@ -99,7 +105,7 @@ export default function Home() {
           localStorage.setItem('gameData', JSON.stringify(cleanedData))
           setGameData(cleanedData)
           
-          console.log('Data cleanup completed:', {
+          console.log('🧹 Data cleanup completed:', {
             original: gameData.records.length,
             filtered: filteredRecords.length,
             final: finalRecords.length
@@ -461,8 +467,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 現在のランク表示 */}
-        {latestRecord && (
+        {/* 現在のランク表示 - 安全チェック付き */}
+        {latestRecord && latestRecord.points && latestRecord.id ? (
           <div className="mb-6 space-y-4">
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
@@ -482,7 +488,7 @@ export default function Home() {
                     ティア内: {currentRank?.tierPoints?.toLocaleString() || 0} / {currentRank?.maxTierPoints?.toLocaleString() || 0} {selectedGame.pointUnit}
                   </div>
                   {/* 目標RPの表示 */}
-                  {goalSettings.isActive && goalSettings.targetRP > 0 && (
+                  {goalSettings?.isActive && goalSettings?.targetRP > 0 && (
                     <div className="text-sm text-yellow-400 mt-1">
                       目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
                     </div>
@@ -508,6 +514,13 @@ export default function Home() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        ) : (
+          /* データがない場合の綺麗な空状態 */
+          <div className="mb-6 bg-gray-800 rounded-lg p-8 text-center">
+            <div className="text-gray-400 text-lg">
+              データがありません。新しい記録を入力してください。
             </div>
           </div>
         )}
