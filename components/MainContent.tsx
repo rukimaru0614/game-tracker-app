@@ -128,12 +128,6 @@ const handleTierPointsChange = (value: string) => {
 
   // データ洗浄と重複削除（初回読み込み時のみ実行）- 超緊急クリーンアップ
   useEffect(() => {
-    // 超緊急：localStorageを全消去して真っさらな状態に
-    if (typeof window !== 'undefined') { 
-      localStorage.clear(); 
-      console.log('🚨 NUCLEAR OPTION: All localStorage cleared for fresh start');
-    }
-    
     try {
       // 古いデータを一度無視して、新しく始める
       const storedData = localStorage.getItem('gameData')
@@ -167,10 +161,21 @@ const handleTierPointsChange = (value: string) => {
           const cleanedData = {
             games: gameData.games || [],
             records: finalRecords,
-            selectedGameId: gameData.selectedGameId || 'apex-legends'
+            selectedGameId: gameData.selectedGameId || 'apex-legends',
+            goalSettings: gameData.goalSettings || {
+              targetRP: 0,
+              targetRank: '',
+              deadline: '',
+              isActive: false
+            }
           }
           
           localStorage.setItem('gameData', JSON.stringify(cleanedData))
+          
+          // 目標設定を復元
+          if (gameData.goalSettings) {
+            setGoalSettings(gameData.goalSettings)
+          }
           
           console.log('🧹 Data cleanup completed:', {
             original: gameData.records.length,
@@ -183,7 +188,13 @@ const handleTierPointsChange = (value: string) => {
         const initialData = {
           games: [],
           records: [],
-          selectedGameId: 'apex-legends'
+          selectedGameId: 'apex-legends',
+          goalSettings: {
+            targetRP: 0,
+            targetRank: '',
+            deadline: '',
+            isActive: false
+          }
         }
         localStorage.setItem('gameData', JSON.stringify(initialData))
       }
@@ -193,7 +204,13 @@ const handleTierPointsChange = (value: string) => {
       const initialData = {
         games: [],
         records: [],
-        selectedGameId: 'apex-legends'
+        selectedGameId: 'apex-legends',
+        goalSettings: {
+          targetRP: 0,
+          targetRank: '',
+          deadline: '',
+          isActive: false
+        }
       }
       localStorage.setItem('gameData', JSON.stringify(initialData))
     }
@@ -237,8 +254,41 @@ const handleTierPointsChange = (value: string) => {
 
   // 目標設定の保存
   const saveGoalSettings = () => {
-    localStorage.setItem('goalSettings', JSON.stringify(goalSettings))
-    setShowGoalForm(false)
+    try {
+      // 目標設定をlocalStorageに保存
+      const updatedGoalSettings = {
+        ...goalSettings,
+        isActive: goalSettings.targetRP > 0
+      }
+      
+      setGoalSettings(updatedGoalSettings)
+      
+      // 既存のgameDataに目標設定を追加
+      const storedData = localStorage.getItem('gameData')
+      if (storedData) {
+        const gameData = JSON.parse(storedData)
+        gameData.goalSettings = updatedGoalSettings
+        localStorage.setItem('gameData', JSON.stringify(gameData))
+      } else {
+        // gameDataがない場合は新規作成
+        const initialData = {
+          games: [],
+          records: [],
+          selectedGameId: selectedGame?.id || 'apex-legends',
+          goalSettings: updatedGoalSettings
+        }
+        localStorage.setItem('gameData', JSON.stringify(initialData))
+      }
+      
+      // 別のlocalStorageにも保存（互換性のため）
+      localStorage.setItem('goalSettings', JSON.stringify(updatedGoalSettings))
+      
+      setShowGoalForm(false)
+      alert('目標を保存しました！')
+    } catch (error) {
+      console.error('目標の保存に失敗しました:', error)
+      alert('目標の保存に失敗しました')
+    }
   }
 
   // 目標設定の読み込み
@@ -246,6 +296,19 @@ const handleTierPointsChange = (value: string) => {
     const stored = localStorage.getItem('goalSettings')
     if (stored) {
       setGoalSettings(JSON.parse(stored))
+    }
+    
+    // gameDataからも目標設定を読み込み（優先）
+    const gameDataStored = localStorage.getItem('gameData')
+    if (gameDataStored) {
+      try {
+        const gameData = JSON.parse(gameDataStored)
+        if (gameData.goalSettings) {
+          setGoalSettings(gameData.goalSettings)
+        }
+      } catch (error) {
+        console.error('gameData読み込みエラー:', error)
+      }
     }
   }, [])
 
