@@ -91,14 +91,14 @@ export default function MainContent() {
 const getMaxTierPoints = (rank: string, division: string): number => {
   if (!rank || !division) return 0
   
-  // Apex Legendsのティア内RP最大値
+  // Apex Legendsのティア内RP最大値（正しい表）
   const apexMaxPoints: { [key: string]: { [key: string]: number } } = {
-    'ルーキー': { 'IV': 249, 'III': 499, 'II': 749, 'I': 999 },
-    'ブロンズ': { 'IV': 1499, 'III': 1999, 'II': 2499, 'I': 2999 },
-    'シルバー': { 'IV': 3499, 'III': 3999, 'II': 4499, 'I': 4799 },
-    'ゴールド': { 'IV': 5299, 'III': 5799, 'II': 6299, 'I': 6799 },
-    'プラチナ': { 'IV': 7799, 'III': 8299, 'II': 8799, 'I': 9299 },
-    'ダイヤモンド': { 'IV': 10299, 'III': 10799, 'II': 11299, 'I': 11799 }
+    'ルーキー': { 'IV': 250, 'III': 250, 'II': 250, 'I': 250 },
+    'ブロンズ': { 'IV': 500, 'III': 500, 'II': 500, 'I': 500 },
+    'シルバー': { 'IV': 500, 'III': 500, 'II': 500, 'I': 750 },
+    'ゴールド': { 'IV': 600, 'III': 600, 'II': 600, 'I': 800 },
+    'プラチナ': { 'IV': 800, 'III': 800, 'II': 800, 'I': 1000 },
+    'ダイヤモンド': { 'IV': 1000, 'III': 1000, 'II': 1000, 'I': 1250 }
   }
   
   return apexMaxPoints[rank]?.[division] || 0
@@ -750,6 +750,11 @@ const handleTierPointsChange = (value: string) => {
                   placeholder={`例: ${selectedRank === 'シルバー' && selectedDivision === 'IV' ? '0-500' : selectedRank === 'シルバー' && selectedDivision === 'I' ? '0-750' : '250'}`}
                   max={getMaxTierPoints(selectedRank, selectedDivision)}
                 />
+                {selectedRank && selectedDivision && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    {selectedRank} {selectedDivision}の上限: {getMaxTierPoints(selectedRank, selectedDivision)} RP
+                  </p>
+                )}
               </div>
               <div>
                 <label htmlFor="matches" className="block text-sm font-medium mb-2">マッチ数</label>
