@@ -107,7 +107,7 @@ export default function MainContent() {
 
   // フォーム状態
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
-  const [selectedRank, setSelectedRank] = useState('')
+  const [selectedRank, setSelectedRank] = useState("ルーキー");
   const [selectedDivision, setSelectedDivision] = useState('')
   const [currentTierPoints, setCurrentTierPoints] = useState('')
   const [memo, setMemo] = useState('')
@@ -371,20 +371,24 @@ export default function MainContent() {
 
   const saveRecord = async () => {
     try {
-      // 変数の存在確認
-      console.log('保存直前のランク:', selectedRank);
+      // 保存ボタン押下時のランクを監視
+      console.log('保存ボタン押下時のランク:', selectedRank);
       
       // プレイヤーが入力した値を直接使用
       const userTierPoints = parseInt(currentTierPoints) || 0
       
-      // 保存データの確定 - 強制書き換え
+      // 画面から直接値をひっぺがしてでも保存する強制処理
+      const selectElement = document.querySelector('select[name="rank"]') as HTMLSelectElement
+      const rankFromSelect = selectElement?.value || '不明'
+      
+      // 保存データの確定 - 空値の徹底排除
       const newRecord: GameRecord = {
         id: Date.now().toString(),
         timestamp: Date.now(),
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
         rp: Number(currentTierPoints || 0), // ← 現在のRPを確実に保存
-        currentTier: String(selectedRank), // ← 選んだランクを100%文字列で保存
+        currentTier: String(selectedRank || rankFromSelect || "不明"), // ← 画面から直接取得
         division: selectedDivision || "IV", // ← ディビジョンを確実に保存
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
