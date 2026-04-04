@@ -20,83 +20,90 @@ interface GoalSettings {
 }
 
 export default function Home() {
-  const { 
-    selectedGame, 
-    allGames, 
-    gameRecords, 
-    selectGame, 
-    addRecord, 
-    deleteRecord,
-    isLoading,
-    error 
-  } = useGameData()
+  // DEPLOY_CHECK_NOW - 強制デプロイ確認用
+  return (
+    <div className="min-h-screen bg-gray-900 text-white">
+      <h1 className="text-4xl font-bold text-red-500 text-center p-4">DEPLOY_CHECK_NOW</h1>
+      
+      {(() => {
+        const { 
+          selectedGame, 
+          allGames, 
+          gameRecords, 
+          selectGame, 
+          addRecord, 
+          deleteRecord,
+          isLoading,
+          error 
+        } = useGameData()
 
-  // フォーム状態
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
-  const [selectedRank, setSelectedRank] = useState('')
-  const [selectedDivision, setSelectedDivision] = useState('')
-  const [currentTierPoints, setCurrentTierPoints] = useState('')
-  const [memo, setMemo] = useState('')
-  const [matches, setMatches] = useState('')
-  const [bestPlacement, setBestPlacement] = useState('')
-  const [rankingPosition, setRankingPosition] = useState('') // ランキング制ランクの順位
-  const [showGameSelector, setShowGameSelector] = useState(false)
-  const [selectedChartPoint, setSelectedChartPoint] = useState<GameRecord | null>(null)
-  const [periodFilter, setPeriodFilter] = useState<'all' | 'week' | 'month'>('all')
-  const [showGoalForm, setShowGoalForm] = useState(false)
-  const [showAnalytics, setShowAnalytics] = useState(false)
-  
-  // 目標設定状態
-  const [goalSettings, setGoalSettings] = useState<GoalSettings>({
-    targetRP: 0,
-    targetRank: '',
-    deadline: '',
-    isActive: false
-  })
-
-  // 連続ログイン日数の管理
-  const [loginStreak, setLoginStreak] = useState(0)
-  const [lastLoginDate, setLastLoginDate] = useState<string | null>(null)
-
-  // データ洗浄と重複削除（初回読み込み時のみ実行）
-  useEffect(() => {
-    // 初回マウント時のみデータ洗浄を実行
-    const storedData = localStorage.getItem('gameData')
-    if (storedData) {
-      try {
-        const gameData = JSON.parse(storedData)
-        if (gameData.records && gameData.records.length > 0) {
-          // ダミーデータのフィルタリング
-          const cleanedRecords = gameData.records.filter((record: GameRecord) => {
-            // 0RP ルーキーや 15450RP などのダミーデータを除外
-            if (record.points === 0 && record.currentTier === 'ルーキー') return false
-            if (record.points === 15450) return false
-            if (record.points === 0 && record.currentTier === '入力済み') return false
-            return true
-          })
-          
-          // 重複データの削除（timestampで重複排除）
-          const uniqueRecords = new Map<string, GameRecord>()
-          cleanedRecords.forEach((record: GameRecord) => {
-            uniqueRecords.set(record.timestamp, record)
-          })
-          
-          const finalRecords = Array.from(uniqueRecords.values()).sort((a, b) => 
-            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-          )
-          
-          // データが変更された場合のみ更新
-          if (finalRecords.length !== gameData.records.length) {
-            gameData.records = finalRecords
-            localStorage.setItem('gameData', JSON.stringify(gameData))
-            console.log('Data cleaned on load:', gameData.records.length, '->', finalRecords.length)
+        // フォーム状態
+        const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+        const [selectedRank, setSelectedRank] = useState('')
+        const [selectedDivision, setSelectedDivision] = useState('')
+        const [currentTierPoints, setCurrentTierPoints] = useState('')
+        const [memo, setMemo] = useState('')
+        const [matches, setMatches] = useState('')
+        const [bestPlacement, setBestPlacement] = useState('')
+        const [rankingPosition, setRankingPosition] = useState('') // ランキング制ランクの順位
+        const [showGameSelector, setShowGameSelector] = useState(false)
+        const [selectedChartPoint, setSelectedChartPoint] = useState<GameRecord | null>(null)
+        const [periodFilter, setPeriodFilter] = useState<'all' | 'week' | 'month'>('all')
+        const [showGoalForm, setShowGoalForm] = useState(false)
+        const [showAnalytics, setShowAnalytics] = useState(false)
+        
+        // 目標設定状態
+        const [goalSettings, setGoalSettings] = useState<GoalSettings>({
+          targetRP: 0,
+          targetRank: '',
+          deadline: '',
+          isActive: false
+        })
+        
+        // 連続ログイン日数の管理
+        const [loginStreak, setLoginStreak] = useState(0)
+        const [lastLoginDate, setLastLoginDate] = useState<string | null>(null)
+        
+        // データ洗浄と重複削除（初回読み込み時のみ実行）
+        useEffect(() => {
+          // 初回マウント時のみデータ洗浄を実行
+          const storedData = localStorage.getItem('gameData')
+          if (storedData) {
+            try {
+              const gameData = JSON.parse(storedData)
+              if (gameData.records && gameData.records.length > 0) {
+                // ダミーデータのフィルタリング
+                const filteredRecords = gameData.records.filter((record: any) => {
+                  if (record.points === 0 && record.currentTier === 'ルーキー') return false
+                  if (record.points === 15450) return false
+                  if (record.points === 0 && record.currentTier === '入力済み') return false
+                  return true
+                })
+                
+                // タイムスタンプで重複削除
+                const uniqueRecords = new Map()
+                filteredRecords.forEach((record: any) => {
+                  uniqueRecords.set(record.timestamp, record)
+                })
+                
+                const finalRecords = Array.from(uniqueRecords.values()).sort((a, b) => 
+                  new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                )
+                
+                if (finalRecords.length !== gameData.records.length) {
+                  const cleanedData = {
+                    ...gameData,
+                    records: finalRecords
+                  }
+                  localStorage.setItem('gameData', JSON.stringify(cleanedData))
+                  setGameData(cleanedData)
+                }
+              }
+            } catch (error) {
+              console.error('データ洗浄エラー:', error)
+            }
           }
-        }
-      } catch (err) {
-        console.error('Failed to clean data on load:', err)
-      }
-    }
-  }, []) // 空の依存配列で初回マウント時のみ実行
+        }, []) // 空の依存配列で初回マウント時のみ実行
 
   // ログインストリークの計算
   useEffect(() => {

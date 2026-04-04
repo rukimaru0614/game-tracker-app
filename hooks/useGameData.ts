@@ -6,6 +6,8 @@ import { Game, GameRecord, GameData } from '@/types/game'
 import { RankTier } from '@/constants/rankThresholds'
 import { APEX_RANK_THRESHOLDS, VALORANT_RANK_THRESHOLDS, LOL_RANK_THRESHOLDS, SF6_RANK_THRESHOLDS } from '@/constants/rankThresholds'
 
+export { Game, GameRecord, GameData }
+
 const DEFAULT_APEX_GAME: Game = {
   id: 'apex-legends',
   name: 'Apex Legends',
