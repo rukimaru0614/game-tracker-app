@@ -682,7 +682,11 @@ const handleTierPointsChange = (value: string) => {
 
   // useEffect 完了まで何も出さない - ブラウザの準備が100%整うまでローディング画面以外は一切描画させない
   if (!isMounted) {
-    return null
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl text-gray-400">読み込み中...</div>
+      </div>
+    )
   }
 
   try {
