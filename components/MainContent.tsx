@@ -123,9 +123,25 @@ export default function MainContent() {
   const [isMounted, setIsMounted] = useState(false) // useEffect 完了まで何も出さない旗
   const [showTutorial, setShowTutorial] = useState(false) // チュートリアル表示状態
   
-  // useEffect 完了まで何も出さない旗 - 超高速化
+  // useEffect 完了まで何も出さない旗 - 超安全化
   useEffect(() => {
-    setIsMounted(true) // 即座にマウント完了
+    const initApp = async () => {
+      try {
+        // データの読み込み
+        const saved = localStorage.getItem('gameRecords');
+        if (saved) {
+          // gameRecordsの更新はuseGameDataフックを通じて行う
+          console.log('Data loaded from localStorage');
+        }
+      } catch (e) {
+        console.error("Data load error:", e);
+        // エラー時も何もしない - useGameDataフックが処理
+      } finally {
+        // エラーが起きても起きなくても、必ずマウント完了にする
+        setIsMounted(true);
+      }
+    };
+    initApp();
   }, [])
 
   // チュートリアル表示制御 - isMounted後のみ実行
@@ -431,11 +447,24 @@ export default function MainContent() {
   // 新しい物理的判定関数を使用して現在のランクを計算
   const currentRank = useMemo(() => latestRecord ? calculateRankFromTotalRP(latestRecord.points) : null, [latestRecord])
   
-  // アナリティクスデータの計算 - 認証直後の安全対策
+  // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
-    return calculateSafeAnalyticsData(gameRecords || [], goalSettings?.targetRP || 0)
+    try {
+      return calculateSafeAnalyticsData(gameRecords || [], goalSettings?.targetRP || 0)
+    } catch (error) {
+      console.error('Analytics data calculation error:', error)
+      return null
+    }
   }, [gameRecords, goalSettings?.targetRP])
-  const goalLines = useMemo(() => getGoalLines(gameRecords.length), [gameRecords.length])
+  
+  const goalLines = useMemo(() => {
+    try {
+      return getGoalLines(gameRecords.length)
+    } catch (error) {
+      console.error('Goal lines calculation error:', error)
+      return []
+    }
+  }, [gameRecords.length])
   
   // グラフデータの重複排除と同期
   const chartData = useMemo(() => {
@@ -480,7 +509,18 @@ export default function MainContent() {
 
   // useEffect 完了まで何も出さない - ブラウザの準備が100%整うまでローディング画面以外は一切描画させない
   if (!isMounted) {
-    return null
+    return (
+      <div className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500 mb-4"></div>
+        <p className="text-lg font-bold">システムを起動しています...</p>
+        <button 
+          onClick={() => setIsMounted(true)} 
+          className="mt-8 text-xs text-gray-500 underline"
+        >
+          強制的に画面を表示する
+        </button>
+      </div>
+    );
   }
 
   try {
