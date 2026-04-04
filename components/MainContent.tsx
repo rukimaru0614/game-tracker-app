@@ -865,7 +865,7 @@ const handleTierPointsChange = (value: string) => {
                   className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
                 >
                   <option value="">ランクを選択</option>
-                  {selectedGame && (getGameRankGroups(selectedGame.id) || []).map((rank) => (
+                  {selectedGame && (getGameRankGroups(selectedGame.id) || []).map((rank: any) => (
                     <option key={rank.name} value={rank.name}>{rank.name}</option>
                   ))}
                 </select>
