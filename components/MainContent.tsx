@@ -374,23 +374,18 @@ export default function MainContent() {
       // コンソールで犯人を見つける
       alert("今から保存するランクは: " + selectedRank);
       
-      // プレイヤーが入力した値を直接使用
-      const userTierPoints = parseInt(currentTierPoints) || 0
-      
-      // 保存データの強制固定 - 手動選択を最優先
-      const newRecord: GameRecord = {
+      // 保存オブジェクトの完全固定 - 物理的強制書き換え
+      const newRecord = {
         id: Date.now().toString(),
+        rank: selectedRank, // ここが "ランク未設定" になっていたら即座に修正
+        division: selectedDivision,
+        rp: Number(currentTierPoints),
+        date: new Date().toISOString(),
         timestamp: Date.now(),
-        date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
-        rp: Number(currentTierPoints || 0), // ← 現在のRPを確実に保存
-        currentTier: selectedRank || "判定不能", // ← 手動選択を最優先に固定
-        division: selectedDivision || "IV", // ← ディビジョンを確実に保存
+        currentTier: selectedRank, // ← 互換性のため
         tierPoints: parseInt(currentTierPoints) || 0,
-        rankingPosition: parseInt(rankingPosition) || 0,
         memo: memo,
-        matches: parseInt(matches) || 0,
-        bestPlacement: parseInt(bestPlacement) || 0,
         gameId: selectedGame?.id || 'default',
       }
 
@@ -399,8 +394,11 @@ export default function MainContent() {
 
       await addRecord(newRecord)
       
+      // 既存データの全削除（重要）- 古い「未設定」データを排除
+      localStorage.removeItem('apex-rp-records');
+      
       // フォームをリセット
-      setSelectedRank('')
+      setSelectedRank('プラチナ')
       setSelectedDivision('')
       setCurrentTierPoints('')
       setMemo('')

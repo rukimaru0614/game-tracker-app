@@ -84,7 +84,7 @@ export default function History() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-sm font-medium text-white">
-                            {record.rank || 'ランク未設定'}{record.division ? ` ${record.division}` : ''} ({Number(record.rp || 0).toLocaleString()} RP)
+                            {record.rank}{record.division ? ` ${record.division}` : ''} ({Number(record.rp || 0).toLocaleString()} RP)
                           </div>
                         </div>
                         {reversedIndex > 0 && (
@@ -156,7 +156,7 @@ export default function History() {
                 <div className="text-sm text-gray-400 mb-1">{selectedGame.pointUnit}</div>
                 <div className="text-2xl font-bold">{Number(selectedRecord.rp || 0).toLocaleString()} {selectedGame.pointUnit}</div>
                 <div className="text-sm font-medium text-white">
-                  {selectedRecord.rank || 'ランク未設定'}{selectedRecord.division ? ` ${selectedRecord.division}` : ''}
+                  {selectedRecord.rank}{selectedRecord.division ? ` ${selectedRecord.division}` : ''}
                 </div>
               </div>
               
