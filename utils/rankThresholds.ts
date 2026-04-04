@@ -1,5 +1,5 @@
 // Rank thresholds utility functions
-import { type Game } from '../hooks/useGameData'
+import { type Game } from '@/types/game'
 
 export interface RankThreshold {
   name: string
