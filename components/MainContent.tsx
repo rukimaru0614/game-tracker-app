@@ -374,43 +374,15 @@ export default function MainContent() {
       // プレイヤーが入力した値を直接使用
       const userTierPoints = parseInt(currentTierPoints) || 0
       
-      // selectedRankが空の場合の強制バックアップ処理
-      let rankToSave = selectedRank
-      
-      // セレクトボックスの値を直接取得（強制対策）
-      const selectElement = document.getElementById('rank') as HTMLSelectElement
-      if (selectElement && !rankToSave) {
-        rankToSave = selectElement.value
-      }
-      
-      // それでも空の場合はRPから計算
-      if (!rankToSave && userTierPoints > 0) {
-        const calculatedRank = getRank(userTierPoints)
-        rankToSave = calculatedRank.name
-      }
-      
-      // 最終的に空の場合は強制代入
-      if (!rankToSave) {
-        rankToSave = '未設定'
-      }
-      
-      // デバッグ用ログ
-      console.log('保存データ確認:', {
-        selectedRank,
-        rankToSave,
-        currentTierPoints,
-        selectedDivision,
-        selectValue: selectElement?.value
-      })
-      
+      // 保存データの確定 - 強制書き換え
       const newRecord: GameRecord = {
         id: Date.now().toString(),
         timestamp: Date.now(),
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
-        rp: userTierPoints, // ← プレイヤー入力値を直接使用
-        currentTier: rankToSave, // ← 選んだランクを強制保存
-        division: selectedDivision,
+        rp: Number(currentTierPoints || 0), // ← 現在のRPを確実に保存
+        currentTier: selectedRank || "ランク未設定", // ← 選んだランクを100%保存
+        division: selectedDivision || "IV", // ← ディビジョンを確実に保存
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
         memo: memo,
@@ -418,6 +390,9 @@ export default function MainContent() {
         bestPlacement: parseInt(bestPlacement) || 0,
         gameId: selectedGame?.id || 'default',
       }
+
+      // コンソールで保存データを確認
+      console.log("保存するデータ:", newRecord)
 
       await addRecord(newRecord)
       
