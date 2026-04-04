@@ -371,6 +371,9 @@ export default function MainContent() {
 
   const saveRecord = async () => {
     try {
+      // 変数の存在確認
+      console.log('保存直前のランク:', selectedRank);
+      
       // プレイヤーが入力した値を直接使用
       const userTierPoints = parseInt(currentTierPoints) || 0
       
@@ -381,7 +384,7 @@ export default function MainContent() {
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
         rp: Number(currentTierPoints || 0), // ← 現在のRPを確実に保存
-        currentTier: selectedRank || "ランク未設定", // ← 選んだランクを100%保存
+        currentTier: String(selectedRank), // ← 選んだランクを100%文字列で保存
         division: selectedDivision || "IV", // ← ディビジョンを確実に保存
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
