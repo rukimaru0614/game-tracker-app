@@ -89,9 +89,8 @@ export default function History() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-sm font-medium text-blue-400 flex items-center space-x-1">
-                            <span>🏆</span>
-                            <span>{record.rank}{record.division ? ` ${record.division}` : ''}</span>
+                          <div className="text-sm font-medium text-white">
+                            {record.rank}{record.division ? ` ${record.division}` : ''}
                           </div>
                           <div className="text-xl font-bold">
                             {Number(record.rp || 0).toLocaleString()} {selectedGame.pointUnit}

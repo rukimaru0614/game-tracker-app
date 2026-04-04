@@ -556,11 +556,11 @@ export default function MainContent() {
         <div className="mb-4 p-3 bg-gray-800/50 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🎯</span>
+              <span className="text-2xl">📊</span>
               <div>
                 <p className="text-sm text-gray-400">現在のランク</p>
                 <p className="text-lg font-bold text-white">
-                  {latestRecord ? getRank(Number(latestRecord.rp)).name : 'データ入力待ち'}
+                  {latestRecord ? `${latestRecord.currentTier}${latestRecord.division ? ` ${latestRecord.division}` : ''}` : 'データ入力待ち'}
                 </p>
               </div>
             </div>
@@ -872,15 +872,13 @@ export default function MainContent() {
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {getRank(Number(latestRecord.rp)).name}
+                    {latestRecord ? `${latestRecord.currentTier}${latestRecord.division ? ` ${latestRecord.division}` : ''}` : 'データ入力待ち'}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-400">次のランクまで</p>
                   <p className="text-lg font-bold text-green-400">
-                    {getRank(Number(latestRecord.rp)).pointsToNext > 0 
-                      ? `${getRank(Number(latestRecord.rp)).pointsToNext} RP`
-                      : '最高ランク'}
+                    計算中...
                   </p>
                 </div>
               </div>
@@ -907,11 +905,11 @@ export default function MainContent() {
                 <div className="w-full bg-gray-600 rounded-full h-2">
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${getRank(Number(latestRecord.rp)).progress * 100}%` }}
+                    style={{ width: '50%' }}
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  {Math.round(getRank(Number(latestRecord.rp)).progress * 100)}% 完了
+                  計算中...
                 </p>
               </div>
             </div>
