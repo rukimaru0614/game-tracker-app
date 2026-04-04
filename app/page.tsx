@@ -341,7 +341,19 @@ export default function Home() {
   }, [goalSettings, latestRecord])
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* スマホ表示の「隠れ家」を完全破壊 - 最前面固定表示 */}
+      <div className="fixed top-20 left-0 w-full z-[9999] bg-black/80 p-4">
+        <div className="text-center">
+          <div className="text-6xl font-extrabold text-orange-500">
+            あと {remainingToGoal.toLocaleString()} RP TEST_DISPLAY
+          </div>
+          <div className="text-sm text-gray-400 mt-2">
+            目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
+          </div>
+        </div>
+      </div>
+
       {/* エラー表示 */}
       {error && (
         <div className="mb-4 bg-red-900 border border-red-700 rounded-lg p-3">
@@ -784,7 +796,7 @@ export default function Home() {
       )}
 
       {/* 推定試合数表示（無条件強制表示・全条件撤廃） */}
-      <div className="mb-6 bg-gray-800 rounded-lg p-4 relative z-50">
+      <div className="fixed top-40 left-0 w-full z-[9999] bg-black/80 p-4">
         <div className="text-center">
           <div className="text-3xl font-extrabold text-yellow-400">
             あと約 {analyticsData?.estimatedMatchesToGoal || '計算中'} 試合で目標達成！ TEST_DISPLAY
