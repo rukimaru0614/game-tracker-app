@@ -421,6 +421,31 @@ export default function MainContent() {
   // 新しい物理的判定関数を使用して現在のランクを計算
   const currentRank = useMemo(() => latestRecord ? calculateRankFromTotalRP(latestRecord.points) : null, [latestRecord])
   
+  // 過去5試合の平均RPを計算
+  const recentAverageRP = useMemo(() => {
+    if (!gameRecords || gameRecords.length === 0) return 0
+    const recentRecords = gameRecords.slice(-5)
+    const totalRP = recentRecords.reduce((sum, record) => sum + record.points, 0)
+    return Math.round(totalRP / recentRecords.length)
+  }, [gameRecords])
+  
+  // ランクアップ予測（過去5試合の平均から計算）
+  const rankUpPrediction = useMemo(() => {
+    if (!latestRecord || !currentRank) return null
+    
+    const pointsToNext = currentRank.pointsToNext
+    if (pointsToNext <= 0) return { matchesNeeded: 0, isTopRank: true }
+    
+    const averageRPPerMatch = recentAverageRP > 0 ? recentAverageRP : 100 // デフォルト100RP
+    const matchesNeeded = Math.ceil(pointsToNext / averageRPPerMatch)
+    
+    return {
+      matchesNeeded,
+      isTopRank: false,
+      averageRPPerMatch
+    }
+  }, [latestRecord, currentRank, recentAverageRP])
+  
   // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
     try {
@@ -810,10 +835,10 @@ export default function MainContent() {
           </div>
 
           {/* ランクアップ予測 */}
-          {latestRecord && (
+          {latestRecord && rankUpPrediction && (
             <div className="mb-4 p-3 bg-gray-700 rounded-lg">
               <h4 className="text-md font-semibold mb-2">ランクアップ予測</h4>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
@@ -830,6 +855,23 @@ export default function MainContent() {
                   </p>
                 </div>
               </div>
+              
+              {/* 過去5試合の平均と予測 */}
+              <div className="bg-gray-600 rounded p-2 mb-3">
+                <div className="flex items-center justify-between text-sm">
+                  <div>
+                    <p className="text-gray-400">過去5試合の平均</p>
+                    <p className="font-bold text-white">{recentAverageRP} RP/試合</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-400">予測試合数</p>
+                    <p className="font-bold text-yellow-400">
+                      {rankUpPrediction.isTopRank ? '-' : `${rankUpPrediction.matchesNeeded} 試合`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               <div className="mt-2">
                 <div className="w-full bg-gray-600 rounded-full h-2">
                   <div 
@@ -843,39 +885,6 @@ export default function MainContent() {
               </div>
             </div>
           )}
-
-          {/* 履歴リスト */}
-          <div className="mb-4">
-            <h4 className="text-md font-semibold mb-3">履歴</h4>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {gameRecords.slice().reverse().map((record) => (
-                <div key={record.id} className="bg-gray-700 rounded p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          {getRank(record.points).name}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {formatDate(record.date)} {record.time}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-yellow-400">
-                        {record.points.toLocaleString()} RP
-                      </p>
-                      {record.memo && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          {record.memo}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {showAnalytics && (
             <div className="space-y-4">

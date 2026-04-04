@@ -5,7 +5,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Trophy, Calendar, Gamepad2, Medal 
 import Link from 'next/link'
 import { useGameData } from '@/hooks/useGameData'
 import { GameRecord } from '@/types/game'
-import { calculateRankProgress, getDefaultRankInfo } from '@/utils/unifiedRankCalculator'
+import { calculateRankProgress, getDefaultRankInfo, getRank } from '@/utils/unifiedRankCalculator'
 
 export default function History() {
   const { selectedGame, gameRecords } = useGameData()
@@ -73,7 +73,7 @@ export default function History() {
             {gameRecords.slice().reverse().map((record, index) => {
               const reversedIndex = gameRecords.length - 1 - index
               const dailyChange = getDailyChange(reversedIndex)
-              const rank = getRankTier(record.points)
+              const rank = getRank(record.points)
               
               return (
                 <div
