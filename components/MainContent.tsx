@@ -374,15 +374,33 @@ export default function MainContent() {
       // プレイヤーが入力した値を直接使用
       const userTierPoints = parseInt(currentTierPoints) || 0
       
-      // selectedRankが空の場合のバックアップ処理
-      const rankToSave = selectedRank || '未選択'
+      // selectedRankが空の場合の強制バックアップ処理
+      let rankToSave = selectedRank
+      
+      // セレクトボックスの値を直接取得（強制対策）
+      const selectElement = document.getElementById('rank') as HTMLSelectElement
+      if (selectElement && !rankToSave) {
+        rankToSave = selectElement.value
+      }
+      
+      // それでも空の場合はRPから計算
+      if (!rankToSave && userTierPoints > 0) {
+        const calculatedRank = getRank(userTierPoints)
+        rankToSave = calculatedRank.name
+      }
+      
+      // 最終的に空の場合は強制代入
+      if (!rankToSave) {
+        rankToSave = '未設定'
+      }
       
       // デバッグ用ログ
       console.log('保存データ確認:', {
         selectedRank,
         rankToSave,
         currentTierPoints,
-        selectedDivision
+        selectedDivision,
+        selectValue: selectElement?.value
       })
       
       const newRecord: GameRecord = {
@@ -391,7 +409,7 @@ export default function MainContent() {
         date: selectedDate,
         time: new Date().toTimeString().slice(0, 5),
         rp: userTierPoints, // ← プレイヤー入力値を直接使用
-        currentTier: rankToSave, // ← 選んだランクを必ず保存
+        currentTier: rankToSave, // ← 選んだランクを強制保存
         division: selectedDivision,
         tierPoints: parseInt(currentTierPoints) || 0,
         rankingPosition: parseInt(rankingPosition) || 0,
@@ -492,6 +510,15 @@ export default function MainContent() {
       currentRank: currentRankName // ← 現在のランク名を追加
     }
   }, [latestRecord, gameRecords])
+  
+  // 古い壊れたデータをクリアする処理（初回のみ）
+  useEffect(() => {
+    const hasOldRecords = gameRecords.some(record => !record.currentTier || record.currentTier === 'ランク未設定')
+    if (hasOldRecords && gameRecords.length > 0) {
+      console.log('古い壊れたデータを検出しました。クリアします。')
+      // localStorage.clear() // すべてクリア
+    }
+  }, [])
   
   // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
