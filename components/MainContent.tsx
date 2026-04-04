@@ -451,7 +451,7 @@ export default function MainContent() {
     return Number(latest?.rp || 0)
   }, [gameRecords])
   
-  // 5試合分析（ランクアップ予測）の確定 - 二重定義を解消
+  // 5試合分析（ランクアップ予測）の確定 - 保存データで計算
   const rankUpPrediction = useMemo(() => {
     if (!gameRecords || gameRecords.length < 5) {
       return { 
@@ -461,32 +461,36 @@ export default function MainContent() {
       }
     }
     
-    // 最新5試合のRP増減を計算
-    const latestRP = Number(gameRecords[gameRecords.length - 1]?.rp || 0)
-    const fiveMatchesAgoRP = Number(gameRecords[gameRecords.length - 5]?.rp || 0)
-    const averageRPChange = (latestRP - fiveMatchesAgoRP) / 5
+    // 最新レコードと5件前のレコードを直接取得
+    const latestRecord = gameRecords[gameRecords.length - 1]
+    const oldRecord = gameRecords[gameRecords.length - 5]
     
-    if (averageRPChange <= 0) {
+    // RP増加と予測の計算 - 保存データを直接使用
+    const diff = (latestRecord?.rp || 0) - (oldRecord?.rp || 0)
+    const average = diff / 5
+    
+    if (average <= 0) {
       return { 
         matchesNeeded: null, 
-        averageRPChange,
+        averageRPChange: average,
         status: 'RP増加なし'
       }
     }
     
     // 次のランクまでの必要RPを計算
-    const nextRankTargetRP = Math.ceil(latestRP / 1000) * 1000 + 1000 // 1000RP刻み
-    const pointsToNext = nextRankTargetRP - latestRP
-    const matchesNeeded = Math.ceil(pointsToNext / averageRPChange)
+    const currentRP = latestRecord?.rp || 0
+    const nextRankTargetRP = Math.ceil(currentRP / 1000) * 1000 + 1000 // 1000RP刻み
+    const pointsToNext = nextRankTargetRP - currentRP
+    const matchesNeeded = Math.ceil(pointsToNext / average)
     
     return {
       matchesNeeded,
-      averageRPChange,
+      averageRPChange: average,
       pointsToNext,
       status: '',
-      currentRP: latestRP
+      currentRP: currentRP
     }
-  }, [gameRecords])
+  }, [gameRecords]) // ← 依存配列にgameRecordsを入れてデータが入った瞬間に再計算
   
   // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
@@ -593,7 +597,7 @@ export default function MainContent() {
               <div>
                 <p className="text-sm text-gray-400">現在のランク</p>
                 <p className="text-lg font-bold text-white">
-                  {latestRecord?.currentTier || 'ランク未設定'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
+                  {latestRecord?.rank || "データなし"} {latestRecord?.division || ""}
                 </p>
               </div>
             </div>
@@ -905,7 +909,7 @@ export default function MainContent() {
                 <div>
                   <p className="text-sm text-gray-400">現在のランク</p>
                   <p className="text-lg font-bold text-white">
-                    {latestRecord?.currentTier || 'ランク未設定'}{latestRecord?.division ? ` ${latestRecord.division}` : ''}
+                    {latestRecord?.rank || "データなし"} {latestRecord?.division || ""}
                   </p>
                 </div>
                 <div className="text-right">
