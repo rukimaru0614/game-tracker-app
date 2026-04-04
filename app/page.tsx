@@ -1002,10 +1002,10 @@ export default function Home() {
         </div>
       )}
 
-      </div>
-
-      {/* ボトムナビゲーション */}
-      <BottomNav />
+      return (
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* 表示の切り替えを「中身」で行う - Hooksルール違反防止 */}
+      {selectedGame && gameRecords ? renderMainContent() : <PasswordGate onAuthenticated={() => {}} />}
     </div>
   )
 }
