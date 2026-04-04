@@ -510,7 +510,7 @@ const handleTierPointsChange = (value: string) => {
     console.log('🔍 Debug: gameRecords.length:', gameRecords.length)
     
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 min-h-screen pb-20">
         {/* ヘッダーとログイン日数 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -803,10 +803,21 @@ const handleTierPointsChange = (value: string) => {
             </div>
           </div>
           
-          {/* 目標設定フォーム */}
-          {showGoalForm && (
-            <div className="mb-4 p-4 bg-gray-700 rounded-lg">
-              <h3 className="text-md font-semibold mb-3">目標を設定</h3>
+          {/* 目標設定フォーム - 常に表示 */}
+          <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-md font-semibold">目標を設定</h3>
+              <button
+                onClick={() => setShowGoalForm(!showGoalForm)}
+                className={`p-2 rounded-lg transition-colors ${
+                  showGoalForm ? 'bg-blue-600 text-white' : 'bg-gray-600 hover:bg-gray-500'
+                }`}
+              >
+                {showGoalForm ? '閉じる' : '開く'}
+              </button>
+            </div>
+            
+            {showGoalForm && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="target-rp" className="block text-sm font-medium mb-2">目標RP</label>
@@ -852,8 +863,8 @@ const handleTierPointsChange = (value: string) => {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     )
