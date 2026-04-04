@@ -421,30 +421,38 @@ export default function MainContent() {
   // 新しい物理的判定関数を使用して現在のランクを計算
   const currentRank = useMemo(() => latestRecord ? calculateRankFromTotalRP(latestRecord.points) : null, [latestRecord])
   
-  // 過去5試合の平均RPを計算
-  const recentAverageRP = useMemo(() => {
-    if (!gameRecords || gameRecords.length === 0) return 0
-    const recentRecords = gameRecords.slice(-5)
-    const totalRP = recentRecords.reduce((sum, record) => sum + record.points, 0)
-    return Math.round(totalRP / recentRecords.length)
+  // 過去5試合のRP増減の平均を計算
+  const recentAverageRPChange = useMemo(() => {
+    if (!gameRecords || gameRecords.length < 2) return 0
+    const recentRecords = gameRecords.slice(-6) // 直近6試合を取得（変化を計算するため）
+    const changes = []
+    
+    for (let i = 1; i < recentRecords.length; i++) {
+      const change = recentRecords[i].points - recentRecords[i-1].points
+      changes.push(change)
+    }
+    
+    if (changes.length === 0) return 0
+    const averageChange = changes.reduce((sum, change) => sum + change, 0) / changes.length
+    return Math.round(averageChange)
   }, [gameRecords])
   
-  // ランクアップ予測（過去5試合の平均から計算）
+  // ランクアップ予測（過去5試合のRP増減平均から計算）
   const rankUpPrediction = useMemo(() => {
     if (!latestRecord || !currentRank) return null
     
     const pointsToNext = currentRank.pointsToNext
     if (pointsToNext <= 0) return { matchesNeeded: 0, isTopRank: true }
     
-    const averageRPPerMatch = recentAverageRP > 0 ? recentAverageRP : 100 // デフォルト100RP
-    const matchesNeeded = Math.ceil(pointsToNext / averageRPPerMatch)
+    const averageRPChangePerMatch = recentAverageRPChange !== 0 ? recentAverageRPChange : 50 // デフォルト50RP増加
+    const matchesNeeded = Math.ceil(pointsToNext / Math.abs(averageRPChangePerMatch))
     
     return {
       matchesNeeded,
       isTopRank: false,
-      averageRPPerMatch
+      averageRPChangePerMatch
     }
-  }, [latestRecord, currentRank, recentAverageRP])
+  }, [latestRecord, currentRank, recentAverageRPChange])
   
   // アナリティクスデータの計算 - useMemoで無限ループを防止
   const analyticsData = useMemo(() => {
@@ -543,6 +551,27 @@ export default function MainContent() {
     // データが空の場合でもメインコンテンツを表示
     return (
       <div className="flex flex-col gap-4 w-full min-h-screen pb-32">
+        {/* 現在のランク表示 - 実データ同期 */}
+        <div className="mb-4 p-3 bg-gray-800/50 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🎯</span>
+              <div>
+                <p className="text-sm text-gray-400">現在のランク</p>
+                <p className="text-lg font-bold text-white">
+                  {latestRecord ? getRank(latestRecord.points).name : 'データなし'}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-400">現在RP</p>
+              <p className="text-lg font-bold text-yellow-400">
+                {latestRecord ? latestRecord.points.toLocaleString() : '0'}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* ヘッダーとログイン日数 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -860,8 +889,10 @@ export default function MainContent() {
               <div className="bg-gray-600 rounded p-2 mb-3">
                 <div className="flex items-center justify-between text-sm">
                   <div>
-                    <p className="text-gray-400">過去5試合の平均</p>
-                    <p className="font-bold text-white">{recentAverageRP} RP/試合</p>
+                    <p className="text-gray-400">過去5試合の平均増減</p>
+                    <p className="font-bold text-white">
+                      {recentAverageRPChange > 0 ? '+' : ''}{recentAverageRPChange} RP/試合
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-400">予測試合数</p>
@@ -898,7 +929,7 @@ export default function MainContent() {
                   <div className="bg-gray-600 rounded p-3">
                     <p className="text-sm text-gray-400">現在のRP</p>
                     <p className="text-2xl font-bold">
-                      {gameRecords.length > 0 ? gameRecords[gameRecords.length - 1].points.toLocaleString() : '0'}
+                      {latestRecord ? latestRecord.points.toLocaleString() : '0'}
                     </p>
                   </div>
                 </div>
