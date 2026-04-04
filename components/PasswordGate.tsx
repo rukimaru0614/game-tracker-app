@@ -44,6 +44,7 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
       try {
         localStorage.setItem('app-authenticated', 'true')
         localStorage.setItem('app-auth-time', new Date().toISOString())
+        console.log('✅ Authentication saved to localStorage')
       } catch (error) {
         console.error('localStorage error:', error)
         // localStorageが使えなくても認証は続行
@@ -57,7 +58,9 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
         // 履歴操作ができなくても認証は続行
       }
       
+      // 即座にコールバックを実行
       onAuthenticated()
+      console.log('✅ Authentication callback executed')
     } else {
       setError(true)
       setTimeout(() => setError(false), 2000)

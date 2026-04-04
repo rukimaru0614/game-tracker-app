@@ -34,22 +34,30 @@ export default function Home() {
   } = useGameData()
 
   const handleAuthenticated = () => {
+    console.log('🔐 Authentication callback received in Home component')
     setIsAuthenticated(true)
+    console.log('🔐 isAuthenticated set to true')
   }
 
   // 認証状態の初期化
   useEffect(() => {
+    console.log('🔐 Checking authentication status...')
     try {
       const savedAuth = localStorage.getItem('app-authenticated')
       const authTime = localStorage.getItem('app-auth-time')
+      
+      console.log('🔐 Saved auth data:', { savedAuth, authTime })
       
       if (savedAuth === 'true' && authTime) {
         const authDate = new Date(authTime)
         const now = new Date()
         const hoursDiff = (now.getTime() - authDate.getTime()) / (1000 * 60 * 60)
         
+        console.log('🔐 Time difference:', hoursDiff, 'hours')
+        
         // 24時間以内なら再認証不要
         if (hoursDiff < 24) {
+          console.log('🔐 Auto-authenticating...')
           setIsAuthenticated(true)
           return
         }
@@ -57,7 +65,10 @@ export default function Home() {
     } catch (error) {
       console.error('localStorage read error:', error)
     }
+    console.log('🔐 Authentication required')
   }, [])
+
+  console.log('🔐 Render state:', { isAuthenticated, hasSelectedGame: !!selectedGame, hasRecords: !!gameRecords })
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
