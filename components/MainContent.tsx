@@ -11,7 +11,6 @@ import { getGameRankThresholds } from '../utils/rankThresholds'
 import { calculateAnalyticsData, type AnalyticsData } from '../utils/analyticsCalculator'
 import { getGoalLines, type GoalLine } from '../utils/goalLines'
 import { type Game } from '../types/game'
-import Tutorial from './Tutorial'
 
 // 目標ポイント設定の型
 interface GoalSettings {
@@ -121,7 +120,6 @@ export default function MainContent() {
   const [showGoalForm, setShowGoalForm] = useState(false)
   const [showAnalytics, setShowAnalytics] = useState(false)
   const [isMounted, setIsMounted] = useState(false) // useEffect 完了まで何も出さない旗
-  const [showTutorial, setShowTutorial] = useState(false) // チュートリアル表示状態
   
   // useEffect 完了まで何も出さない旗 - 超安全化
   useEffect(() => {
@@ -144,30 +142,6 @@ export default function MainContent() {
     initApp();
   }, [])
 
-  // チュートリアル表示制御 - isMounted後のみ実行
-  useEffect(() => {
-    if (!isMounted) return // isMountedがtrueになるまで待機
-    
-    const hasSeenTutorial = localStorage.getItem('hasSeenTutorial')
-    if (!hasSeenTutorial) {
-      // 少し遅延して表示して、他の読み込みを優先
-      const tutorialTimer = setTimeout(() => {
-        setShowTutorial(true)
-      }, 100) // 100msに短縮
-      return () => clearTimeout(tutorialTimer)
-    }
-  }, [isMounted])
-
-  const handleTutorialComplete = () => {
-    setShowTutorial(false)
-    localStorage.setItem('hasSeenTutorial', 'true')
-  }
-
-  const handleTutorialSkip = () => {
-    setShowTutorial(false)
-    localStorage.setItem('hasSeenTutorial', 'true')
-  }
-  
   // 目標設定状態
   const [goalSettings, setGoalSettings] = useState<GoalSettings>({
     targetRP: 0,
@@ -544,12 +518,6 @@ export default function MainContent() {
     // データが空の場合でもメインコンテンツを表示
     return (
       <div className="flex flex-col gap-4 w-full min-h-screen pb-32">
-        {/* チュートリアル */}
-        <Tutorial 
-          onComplete={handleTutorialComplete}
-          onSkip={handleTutorialSkip}
-        />
-        
         {/* ヘッダーとログイン日数 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
