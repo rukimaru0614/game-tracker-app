@@ -87,6 +87,37 @@ export default function MainContent() {
   const [loginStreak, setLoginStreak] = useState(0)
   const [lastLoginDate, setLastLoginDate] = useState<string | null>(null)
 
+  // ティア内RPの最大値を計算する関数
+const getMaxTierPoints = (rank: string, division: string): number => {
+  if (!rank || !division) return 0
+  
+  // Apex Legendsのティア内RP最大値
+  const apexMaxPoints: { [key: string]: { [key: string]: number } } = {
+    'ルーキー': { 'IV': 249, 'III': 499, 'II': 749, 'I': 999 },
+    'ブロンズ': { 'IV': 1499, 'III': 1999, 'II': 2499, 'I': 2999 },
+    'シルバー': { 'IV': 3499, 'III': 3999, 'II': 4499, 'I': 4799 },
+    'ゴールド': { 'IV': 5299, 'III': 5799, 'II': 6299, 'I': 6799 },
+    'プラチナ': { 'IV': 7799, 'III': 8299, 'II': 8799, 'I': 9299 },
+    'ダイヤモンド': { 'IV': 10299, 'III': 10799, 'II': 11299, 'I': 11799 }
+  }
+  
+  return apexMaxPoints[rank]?.[division] || 0
+}
+
+// ティア内RPの入力検証
+const handleTierPointsChange = (value: string) => {
+  const numValue = parseInt(value) || 0
+  const maxPoints = getMaxTierPoints(selectedRank, selectedDivision)
+  
+  if (maxPoints > 0 && numValue > maxPoints) {
+    // 上限を超えた場合は警告して最大値に設定
+    alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
+    setCurrentTierPoints(maxPoints.toString())
+  } else {
+    setCurrentTierPoints(value)
+  }
+}
+
   // useEffect 完了まで何も出さない - ブラウザの準備が100%整うまでローディング画面以外は一切描画させない
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -706,15 +737,18 @@ export default function MainContent() {
                 </div>
               )}
               <div>
-                <label htmlFor="tier-points" className="block text-sm font-medium mb-2">ティア内RP</label>
+                <label htmlFor="tier-points" className="block text-sm font-medium mb-2">
+                  ティア内RP {selectedRank && selectedDivision && `(最大: ${getMaxTierPoints(selectedRank, selectedDivision)})`}
+                </label>
                 <input
                   id="tier-points"
                   name="tier-points"
                   type="number"
                   value={currentTierPoints}
-                  onChange={(e) => setCurrentTierPoints(e.target.value)}
+                  onChange={(e) => handleTierPointsChange(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                  placeholder="例: 250"
+                  placeholder={`例: ${selectedRank === 'シルバー' && selectedDivision === 'IV' ? '0-500' : selectedRank === 'シルバー' && selectedDivision === 'I' ? '0-750' : '250'}`}
+                  max={getMaxTierPoints(selectedRank, selectedDivision)}
                 />
               </div>
               <div>
