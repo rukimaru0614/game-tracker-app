@@ -209,8 +209,20 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
       } else if (numValue >= 1600) {
         setSelectedRank('ハイマスター')
         setCurrentTierPoints('0')
+      } else if (selectedRank === 'ハイマスター' && numValue < 1600) {
+        // ハイマスターで1599以下はマスターに戻す
+        setSelectedRank('マスター')
+        setCurrentTierPoints(value)
+      } else if (selectedRank === 'グランドマスター' && numValue < 1900) {
+        // グランドマスターで1899以下はハイマスターに戻す
+        setSelectedRank('ハイマスター')
+        setCurrentTierPoints(value)
+      } else if (selectedRank === 'アルティメットマスター' && numValue < 2200) {
+        // アルティメットマスターで2199以下はグランドマスターに戻す
+        setSelectedRank('グランドマスター')
+        setCurrentTierPoints(value)
       } else {
-        // 1599以下は現在のランクを維持（マスター以下はLPなので）
+        // その他は現在のランクを維持（マスター以下はLPなので）
         if (maxPoints > 0 && numValue > maxPoints) {
           if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
             alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
