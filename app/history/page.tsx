@@ -73,7 +73,7 @@ export default function History() {
             {gameRecords.slice().reverse().map((record, index) => {
               const reversedIndex = gameRecords.length - 1 - index
               const dailyChange = getDailyChange(reversedIndex)
-              const rank = getRank(record?.rp || 0)
+              const rank = record.rank ? { name: record.rank, color: '#60A5FA', icon: '🏆' } : getRank(record?.rp || 0)
               const change = reversedIndex > 0 ? (record?.rp || 0) - (gameRecords[reversedIndex - 1]?.rp || 0) : 0
               
               return (
@@ -92,7 +92,7 @@ export default function History() {
                         <div>
                           <div className={`text-sm font-medium ${rank.color} flex items-center space-x-1`}>
                             <span>{rank.icon}</span>
-                            <span>{rank.name}</span>
+                            <span>{rank.name}{record.division ? ` ${record.division}` : ''}</span>
                           </div>
                           <div className="text-xl font-bold">
                             {Number(record.rp || 0).toLocaleString()} {selectedGame.pointUnit}
