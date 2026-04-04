@@ -385,25 +385,26 @@ export default function Home() {
     if (!selectedGame || !gameRecords) return null
     
     return (
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-red-400" />
-            <span className="text-red-200 text-sm">{error}</span>
-          </div>
-        </div>
-      )}
-
-      {/* ローディング表示 */}
-      {isLoading && (
-        <div className="mb-4 bg-blue-900 border border-blue-700 rounded-lg p-3">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-blue-200 text-sm">保存中...</span>
-          </div>
-        </div>
-      )}
-
-      {/* メインコンテンツ - 正しい順番で整列 */}
       <div className="flex flex-col gap-4">
+        {/* エラー表示 */}
+        {error && (
+          <div className="mb-4 bg-red-900 border border-red-700 rounded-lg p-3">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+              <span className="text-red-200 text-sm">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* ローディング表示 */}
+        {isLoading && (
+          <div className="mb-4 bg-blue-900 border border-blue-700 rounded-lg p-3">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-blue-200 text-sm">保存中...</span>
+            </div>
+          </div>
+        )}
         {/* ヘッダーとログイン日数 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
