@@ -43,9 +43,9 @@ export default function Home() {
     return null
   }
 
-  // 厳格な排他的レンダリング - どちらか一方のみを描画
+  // 完全な入れ替え - 共通の親要素の中で三項演算子を使用
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen">
       {!isAuthenticated ? (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
           {/* 動的背景要素 */}
