@@ -166,8 +166,19 @@ const generateLinePath = (data: GraphDataPoint[], width: number, height: number)
   }).join(' ')
 }
 // ティア内RPの最大値を計算する関数
-const getMaxTierPoints = (rank: string, division: string): number => {
+const getMaxTierPoints = (rank: string, division: string, gameId?: string): number => {
   if (!rank || !division) return 0
+  
+  // ゲームごとのティア内RP最大値
+  if (gameId === 'league-of-legends' || gameId === 'valorant') {
+    // LoL/VALOは1ティア内の上限を100に設定
+    return 100
+  }
+  
+  if (gameId === 'street-fighter-6') {
+    // スト6は上限なし（または非常に大きな値）
+    return 99999999
+  }
   
   // Apex Legendsのティア内RP最大値（正しい表）
   const apexMaxPoints: { [key: string]: { [key: string]: number } } = {
@@ -185,11 +196,15 @@ const getMaxTierPoints = (rank: string, division: string): number => {
 // ティア内RPの入力検証
 const handleTierPointsChange = (value: string) => {
   const numValue = parseInt(value) || 0
-  const maxPoints = getMaxTierPoints(selectedRank, selectedDivision)
+  const maxPoints = getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)
   
   if (maxPoints > 0 && numValue > maxPoints) {
     // 上限を超えた場合は警告して最大値に設定
-    alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
+    if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
+      alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
+    } else {
+      alert(`${selectedRank} ${selectedDivision}のティア内RPは最大${maxPoints}までです`)
+    }
     setCurrentTierPoints(maxPoints.toString())
   } else {
     setCurrentTierPoints(value)
@@ -911,7 +926,7 @@ const handleTierPointsChange = (value: string) => {
               )}
               <div>
                 <label htmlFor="tier-points" className="block text-sm font-medium mb-2">
-                  ティア内RP {selectedRank && selectedDivision && `(最大: ${getMaxTierPoints(selectedRank, selectedDivision)})`}
+                  ティア内RP {selectedRank && selectedDivision && `(最大: ${getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)})`}
                 </label>
                 <input
                   id="tier-points"
@@ -920,12 +935,16 @@ const handleTierPointsChange = (value: string) => {
                   value={currentTierPoints}
                   onChange={(e) => handleTierPointsChange(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                  placeholder={`例: ${selectedRank === 'シルバー' && selectedDivision === 'IV' ? '0-500' : selectedRank === 'シルバー' && selectedDivision === 'I' ? '0-750' : '250'}`}
-                  max={getMaxTierPoints(selectedRank, selectedDivision)}
+                  placeholder={`例: ${selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant' ? '0-100' : selectedRank === 'シルバー' && selectedDivision === 'IV' ? '0-500' : selectedRank === 'シルバー' && selectedDivision === 'I' ? '0-750' : '250'}`}
+                  min="0"
+                  max={getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)}
                 />
                 {selectedRank && selectedDivision && (
                   <p className="text-xs text-gray-400 mt-1">
-                    {selectedRank} {selectedDivision}の上限: {getMaxTierPoints(selectedRank, selectedDivision)} RP
+                    {selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant' 
+                      ? `${selectedGame.name}のティア内RP上限: ${getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)}`
+                      : `${selectedRank} ${selectedDivision}の上限: ${getMaxTierPoints(selectedRank, selectedDivision, selectedGame?.id)} RP`
+                    }
                   </p>
                 )}
               </div>

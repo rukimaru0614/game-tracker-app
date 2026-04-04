@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import PasswordGate from "@/components/PasswordGate";
 import MainContent from "@/components/MainContent";
@@ -18,8 +17,8 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {!isAuthenticated ? (
+    <div style={{ backgroundColor: "#111827", minHeight: "100vh" }}>
+      { !isAuthenticated ? (
         <PasswordGate onAuthenticated={() => {
           localStorage.setItem("auth", "true");
           setIsAuthenticated(true);
