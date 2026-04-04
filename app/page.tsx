@@ -17,11 +17,9 @@ export default function Home() {
 
   if (!isMounted) return null;
 
-  // 重要：ここを絶対にこの通りに書き換えてください。
-  // return文の中に、これ以外のコンポーネントを絶対に書かないでください。
   return (
     <div className="min-h-screen bg-gray-900">
-      { !isAuthenticated ? (
+      {!isAuthenticated ? (
         <PasswordGate onAuthenticated={() => {
           localStorage.setItem("auth", "true");
           setIsAuthenticated(true);
