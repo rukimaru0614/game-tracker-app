@@ -713,7 +713,7 @@ const handleTierPointsChange = (value: string) => {
     console.log('🔍 Debug: gameRecords.length:', gameRecords.length)
     
     return (
-      <div className="flex flex-col gap-4 min-h-screen pb-32">
+      <div className="flex flex-col gap-4 w-full min-h-screen pb-32">
         {/* ヘッダーとログイン日数 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
