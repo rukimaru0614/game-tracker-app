@@ -5,18 +5,12 @@ import { ArrowLeft, TrendingUp, TrendingDown, Trophy, Calendar, Gamepad2, Medal 
 import Link from 'next/link'
 import { useGameData } from '@/hooks/useGameData'
 import { GameRecord } from '@/types/game'
-import { calculateRankProgress, getDefaultRankInfo, getRank } from '@/utils/unifiedRankCalculator'
 
 export default function History() {
   const { selectedGame, gameRecords } = useGameData()
   const [selectedRecord, setSelectedRecord] = useState<GameRecord | null>(null)
 
-  const getRankTier = (points: number) => {
-    if (!selectedGame) {
-      return getDefaultRankInfo()
-    }
-    return calculateRankProgress(points || 0)
-  }
+  // getRankTier関数を削除 - 自動計算を禁止
 
   const getDailyChange = (currentIndex: number) => {
     if (currentIndex === 0) return 0
@@ -90,10 +84,7 @@ export default function History() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-sm font-medium text-white">
-                            {record.rank}{record.division ? ` ${record.division}` : ''}
-                          </div>
-                          <div className="text-xl font-bold">
-                            {Number(record.rp || 0).toLocaleString()} {selectedGame.pointUnit}
+                            {record.rank}{record.division ? ` ${record.division}` : ''} ({Number(record.rp || 0).toLocaleString()} RP)
                           </div>
                         </div>
                         {reversedIndex > 0 && (
@@ -163,10 +154,9 @@ export default function History() {
               
               <div>
                 <div className="text-sm text-gray-400 mb-1">{selectedGame.pointUnit}</div>
-                <div className="text-2xl font-bold">{selectedRecord.points.toLocaleString()} {selectedGame.pointUnit}</div>
-                <div className={`text-sm font-medium flex items-center space-x-1 ${getRankTier(selectedRecord.points).color}`}>
-                  <span>{getRankTier(selectedRecord.points).icon}</span>
-                  <span>{getRankTier(selectedRecord.points).name}</span>
+                <div className="text-2xl font-bold">{Number(selectedRecord.rp || 0).toLocaleString()} {selectedGame.pointUnit}</div>
+                <div className="text-sm font-medium text-white">
+                  {selectedRecord.rank}{selectedRecord.division ? ` ${selectedRecord.division}` : ''}
                 </div>
               </div>
               
