@@ -89,7 +89,10 @@ export default function MainContent() {
 
   // useEffect 完了まで何も出さない - ブラウザの準備が100%整うまでローディング画面以外は一切描画させない
   useEffect(() => {
-    setIsMounted(true)
+    const timer = setTimeout(() => {
+      setIsMounted(true)
+    }, 100) // 100ms待機して確実にマウントさせる
+    return () => clearTimeout(timer)
   }, [])
 
   // データ洗浄と重複削除（初回読み込み時のみ実行）- 超緊急クリーンアップ
@@ -417,7 +420,7 @@ export default function MainContent() {
 
   try {
     // 2段構え - データが1ミリでも不完全ならLoading表示
-    if (!selectedGame || !gameRecords || !latestRecord) {
+    if (!selectedGame || !gameRecords || !gameRecords.length) {
       return (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-xl text-gray-400">データ読み込み中...</div>
