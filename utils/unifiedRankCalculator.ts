@@ -153,6 +153,16 @@ export function calculateRankFromTotalRP(totalPoints: number): UnifiedRankInfo {
   }
 }
 
+/**
+ * RPからランクを取得する関数（履歴表示用）
+ */
+export function getRank(rp: number): UnifiedRankInfo {
+  console.log('getRank呼び出し:', rp, 'RP')
+  
+  // 直接RPを渡して物理的判定
+  return calculateRankFromTotalRP(rp)
+}
+
 export function calculateRankProgress(totalPoints: number): UnifiedRankInfo {
   // この関数は互換性のために残す
   return calculateRankFromTotalRP(totalPoints)

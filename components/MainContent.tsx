@@ -5,7 +5,7 @@ import { ChevronDown, AlertCircle, Trophy, Target, TrendingUp, Calendar, BarChar
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { useGameData } from '../hooks/useGameData'
 import { type GameRecord } from '../types/game'
-import { calculateRankFromTotalRP } from '../utils/unifiedRankCalculator'
+import { calculateRankFromTotalRP, getRank } from '../utils/unifiedRankCalculator'
 import { getGameRankGroups, isGameRankingBased, getGameValidDivisions } from '../utils/gameUtils'
 import { getGameRankThresholds } from '../utils/rankThresholds'
 import { calculateAnalyticsData, type AnalyticsData } from '../utils/analyticsCalculator'
@@ -838,6 +838,74 @@ export default function MainContent() {
               >
                 {showAnalytics ? '履歴を閉じる' : '履歴を開く'}
               </button>
+            </div>
+          </div>
+
+          {/* ランクアップ予測 */}
+          {latestRecord && (
+            <div className="mb-4 p-3 bg-gray-700 rounded-lg">
+              <h4 className="text-md font-semibold mb-2">ランクアップ予測</h4>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">現在のランク</p>
+                  <p className="text-lg font-bold text-white">
+                    {getRank(latestRecord.points).name}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-400">次のランクまで</p>
+                  <p className="text-lg font-bold text-green-400">
+                    {getRank(latestRecord.points).pointsToNext > 0 
+                      ? `${getRank(latestRecord.points).pointsToNext} RP`
+                      : '最高ランク'
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2">
+                <div className="w-full bg-gray-600 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${getRank(latestRecord.points).progress * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {Math.round(getRank(latestRecord.points).progress * 100)}% 完了
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 履歴リスト */}
+          <div className="mb-4">
+            <h4 className="text-md font-semibold mb-3">履歴</h4>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {gameRecords.slice().reverse().map((record) => (
+                <div key={record.id} className="bg-gray-700 rounded p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          {getRank(record.points).name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(record.date)} {record.time}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-yellow-400">
+                        {record.points.toLocaleString()} RP
+                      </p>
+                      {record.memo && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          {record.memo}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
