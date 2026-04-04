@@ -200,6 +200,9 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
     
     // ST6のMP自動ランクアップ
     if (selectedGame?.id === 'street-fighter-6') {
+      // まず現在のランクがMPランクかLPランクかを判定
+      const isCurrentRankMP = ['マスター', 'ハイマスター', 'グランドマスター', 'アルティメットマスター'].includes(selectedRank)
+      
       if (numValue >= 2200) {
         setSelectedRank('アルティメットマスター')
         setCurrentTierPoints('0')
@@ -209,20 +212,12 @@ const getMaxTierPoints = (rank: string, division: string, gameId?: string): numb
       } else if (numValue >= 1600) {
         setSelectedRank('ハイマスター')
         setCurrentTierPoints('0')
-      } else if (selectedRank === 'ハイマスター' && numValue < 1600) {
-        // ハイマスターで1599以下はマスターに戻す
+      } else if (isCurrentRankMP && numValue < 1600) {
+        // MPランクからLPランクに戻す場合はマスターに
         setSelectedRank('マスター')
         setCurrentTierPoints(value)
-      } else if (selectedRank === 'グランドマスター' && numValue < 1900) {
-        // グランドマスターで1899以下はハイマスターに戻す
-        setSelectedRank('ハイマスター')
-        setCurrentTierPoints(value)
-      } else if (selectedRank === 'アルティメットマスター' && numValue < 2200) {
-        // アルティメットマスターで2199以下はグランドマスターに戻す
-        setSelectedRank('グランドマスター')
-        setCurrentTierPoints(value)
       } else {
-        // その他は現在のランクを維持（マスター以下はLPなので）
+        // LPランク（ダイアモンド〜アイアン）は現在のランクを維持
         if (maxPoints > 0 && numValue > maxPoints) {
           if (selectedGame?.id === 'league-of-legends' || selectedGame?.id === 'valorant') {
             alert(`${selectedGame.name}のティア内RPは最大${maxPoints}までです`)
