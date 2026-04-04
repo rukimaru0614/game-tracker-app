@@ -87,7 +87,74 @@ export default function MainContent() {
   const [loginStreak, setLoginStreak] = useState(0)
   const [lastLoginDate, setLastLoginDate] = useState<string | null>(null)
 
-  // ティア内RPの最大値を計算する関数
+  // グラフ期間フィルターの型
+type GraphPeriod = 'week' | 'month' | 'all'
+
+// グラフデータの型
+interface GraphDataPoint {
+  timestamp: number
+  date: string
+  time: string
+  points: number
+  rank: string
+  division?: string
+}
+
+// グラフ期間フィルター
+const [graphPeriod, setGraphPeriod] = useState<GraphPeriod>('week')
+
+// グラフデータをフィルタリングする関数
+const getFilteredGraphData = (): GraphDataPoint[] => {
+  if (!gameRecords || gameRecords.length === 0) return []
+  
+  const now = new Date()
+  let startDate: Date
+  
+  switch (graphPeriod) {
+    case 'week':
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      break
+    case 'month':
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      break
+    case 'all':
+    default:
+      startDate = new Date(0) // すべてのデータ
+      break
+  }
+  
+  return gameRecords
+    .filter(record => new Date(record.timestamp) >= startDate)
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .map(record => ({
+      timestamp: record.timestamp,
+      date: record.date,
+      time: record.time,
+      points: record.points,
+      rank: record.currentTier,
+      division: record.division
+    }))
+}
+
+// SVGパスを生成する関数
+const generateLinePath = (data: GraphDataPoint[], width: number, height: number): string => {
+  if (data.length === 0) return ''
+  
+  const maxPoints = Math.max(...data.map(d => d.points))
+  const minPoints = Math.min(...data.map(d => d.points))
+  const range = maxPoints - minPoints || 1
+  
+  const padding = 40
+  const graphWidth = width - padding * 2
+  const graphHeight = height - padding * 2
+  
+  return data.map((point, index) => {
+    const x = padding + (index / (data.length - 1 || 1)) * graphWidth
+    const y = padding + (1 - (point.points - minPoints) / range) * graphHeight
+    return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
+  }).join(' ')
+}
+// ティア内RPの最大値を計算する関数
 const getMaxTierPoints = (rank: string, division: string): number => {
   if (!rank || !division) return 0
   
@@ -573,7 +640,7 @@ const handleTierPointsChange = (value: string) => {
     console.log('🔍 Debug: gameRecords.length:', gameRecords.length)
     
     return (
-      <div className="flex flex-col gap-4 min-h-screen pb-20">
+      <div className="flex flex-col gap-4 min-h-screen pb-32">
         {/* ヘッダーとログイン日数 */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -928,71 +995,242 @@ const handleTierPointsChange = (value: string) => {
         <div className="my-6 bg-gray-800 rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">RP推移グラフ</h3>
-            <button
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              className={`p-2 rounded-lg transition-colors ${
-                showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-            >
-              <BarChart3 className="w-5 h-5" />
-            </button>
+            <div className="flex items-center space-x-2">
+              {/* 期間フィルター */}
+              <div className="flex bg-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setGraphPeriod('week')}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    graphPeriod === 'week' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  1週間
+                </button>
+                <button
+                  onClick={() => setGraphPeriod('month')}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    graphPeriod === 'month' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  3ヶ月
+                </button>
+                <button
+                  onClick={() => setGraphPeriod('all')}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    graphPeriod === 'all' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  全期間
+                </button>
+              </div>
+              
+              <button
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className={`p-2 rounded-lg transition-colors ${
+                  showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                }`}
+              >
+                <BarChart3 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           
           {showAnalytics && (
-            <div className="h-64 bg-gray-700 rounded-lg p-4 relative">
-              <div className="h-full flex items-end justify-between px-2">
-                {/* 記録データの簡易表示 */}
-                {gameRecords.slice(-10).map((record, index) => {
-                  const maxRP = Math.max(...gameRecords.map(r => r.points))
-                  const height = maxRP > 0 ? (record.points / maxRP) * 100 : 0
-                  
-                  return (
-                    <div
-                      key={record.id}
-                      className="flex flex-col items-center flex-1 mx-1"
-                    >
-                      <div
-                        className="w-full bg-blue-500 rounded-t transition-all duration-300"
-                        style={{ height: `${height}%`, minHeight: '4px' }}
-                        title={`${record.date} ${record.time}: ${record.points}RP`}
-                      />
-                      <div className="text-xs text-gray-400 mt-1 text-center">
-                        {new Date(record.timestamp).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
-                      </div>
+            <div className="bg-gray-700 rounded-lg p-4">
+              <div className="h-80 relative">
+                {getFilteredGraphData().length > 0 ? (
+                  <svg width="100%" height="100%" viewBox="0 0 800 320" className="w-full h-full">
+                    {/* グリッド線 */}
+                    <defs>
+                      <pattern id="grid" width="80" height="64" patternUnits="userSpaceOnUse">
+                        <path d="M 80 0 L 0 0 0 64" fill="none" stroke="#374151" strokeWidth="1"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    
+                    {/* 目標ライン */}
+                    {goalSettings?.targetRP > 0 && (() => {
+                      const data = getFilteredGraphData()
+                      const maxPoints = Math.max(...data.map(d => d.points))
+                      const minPoints = Math.min(...data.map(d => d.points))
+                      const range = maxPoints - minPoints || 1
+                      const y = 40 + (1 - (goalSettings.targetRP - minPoints) / range) * 240
+                      return (
+                        <g>
+                          <line
+                            x1="40"
+                            y1={y}
+                            x2="760"
+                            y2={y}
+                            stroke="#fbbf24"
+                            strokeWidth="2"
+                            strokeDasharray="5,5"
+                          />
+                          <text
+                            x="50"
+                            y={y - 5}
+                            fill="#fbbf24"
+                            fontSize="12"
+                            className="bg-gray-800"
+                          >
+                            目標: {goalSettings.targetRP}RP
+                          </text>
+                        </g>
+                      )
+                    })()}
+                    
+                    {/* 現在RPライン */}
+                    {latestRecord && (() => {
+                      const data = getFilteredGraphData()
+                      const maxPoints = Math.max(...data.map(d => d.points))
+                      const minPoints = Math.min(...data.map(d => d.points))
+                      const range = maxPoints - minPoints || 1
+                      const y = 40 + (1 - (latestRecord.points - minPoints) / range) * 240
+                      return (
+                        <g>
+                          <line
+                            x1="40"
+                            y1={y}
+                            x2="760"
+                            y2={y}
+                            stroke="#10b981"
+                            strokeWidth="2"
+                          />
+                          <text
+                            x="760"
+                            y={y - 5}
+                            fill="#10b981"
+                            fontSize="12"
+                            textAnchor="end"
+                          >
+                            現在: {latestRecord.points}RP
+                          </text>
+                        </g>
+                      )
+                    })()}
+                    
+                    {/* 折れ線グラフ */}
+                    {(() => {
+                      const data = getFilteredGraphData()
+                      if (data.length === 0) return null
+                      
+                      const path = generateLinePath(data, 800, 320)
+                      
+                      return (
+                        <g>
+                          {/* 折れ線 */}
+                          <path
+                            d={path}
+                            fill="none"
+                            stroke="#3b82f6"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          
+                          {/* データポイント */}
+                          {data.map((point, index) => {
+                            const maxPoints = Math.max(...data.map(d => d.points))
+                            const minPoints = Math.min(...data.map(d => d.points))
+                            const range = maxPoints - minPoints || 1
+                            const x = 40 + (index / (data.length - 1 || 1)) * 720
+                            const y = 40 + (1 - (point.points - minPoints) / range) * 240
+                            
+                            return (
+                              <g key={point.timestamp}>
+                                <circle
+                                  cx={x}
+                                  cy={y}
+                                  r="4"
+                                  fill="#3b82f6"
+                                  stroke="#1f2937"
+                                  strokeWidth="2"
+                                />
+                                <title>
+                                  {point.date} {point.time}: {point.points}RP ({point.rank})
+                                </title>
+                              </g>
+                            )
+                          })}
+                        </g>
+                      )
+                    })()}
+                    
+                    {/* 軸ラベル */}
+                    <g>
+                      {/* Y軸ラベル */}
+                      {(() => {
+                        const data = getFilteredGraphData()
+                        if (data.length === 0) return null
+                        
+                        const maxPoints = Math.max(...data.map(d => d.points))
+                        const minPoints = Math.min(...data.map(d => d.points))
+                        const range = maxPoints - minPoints || 1
+                        
+                        return [0, 1, 2, 3, 4].map(i => {
+                          const value = minPoints + (range * (4 - i) / 4)
+                          const y = 40 + (i / 4) * 240
+                          return (
+                            <g key={i}>
+                              <line
+                                x1="35"
+                                y1={y}
+                                x2="40"
+                                y2={y}
+                                stroke="#6b7280"
+                                strokeWidth="1"
+                              />
+                              <text
+                                x="30"
+                                y={y + 4}
+                                fill="#6b7280"
+                                fontSize="12"
+                                textAnchor="end"
+                              >
+                                {Math.round(value).toLocaleString()}
+                              </text>
+                            </g>
+                          )
+                        })
+                      })()}
+                      
+                      {/* X軸ラベル */}
+                      {(() => {
+                        const data = getFilteredGraphData()
+                        return data.map((point, index) => {
+                          if (index % Math.ceil(data.length / 8) !== 0) return null
+                          
+                          const x = 40 + (index / (data.length - 1 || 1)) * 720
+                          const date = new Date(point.timestamp)
+                          const label = date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
+                          
+                          return (
+                            <g key={point.timestamp}>
+                              <text
+                                x={x}
+                                y="300"
+                                fill="#6b7280"
+                                fontSize="10"
+                                textAnchor="middle"
+                              >
+                                {label}
+                              </text>
+                            </g>
+                          )
+                        })
+                      })()}
+                    </g>
+                  </svg>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-gray-400">
+                    <div className="text-center">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-2" />
+                      <p>データがありません</p>
+                      <p className="text-sm mt-1">記録を入力してください</p>
                     </div>
-                  )
-                })}
+                  </div>
+                )}
               </div>
-              
-              {/* 目標ライン */}
-              {goalSettings?.targetRP > 0 && (
-                <div 
-                  className="absolute left-0 right-0 border-t-2 border-yellow-400 border-dashed" 
-                  style={{ 
-                    bottom: `${Math.max(...gameRecords.map(r => r.points)) > 0 ? 
-                      (1 - goalSettings.targetRP / Math.max(...gameRecords.map(r => r.points))) * 100 : 0}%` 
-                  }}
-                >
-                  <span className="absolute -top-2 left-2 text-xs text-yellow-400 bg-gray-800 px-1 rounded">
-                    目標: {goalSettings.targetRP}RP
-                  </span>
-                </div>
-              )}
-              
-              {/* 現在のRPライン */}
-              {latestRecord && (
-                <div 
-                  className="absolute left-0 right-0 border-t-2 border-green-400" 
-                  style={{ 
-                    bottom: `${Math.max(...gameRecords.map(r => r.points)) > 0 ? 
-                      (1 - latestRecord.points / Math.max(...gameRecords.map(r => r.points))) * 100 : 0}%` 
-                  }}
-                >
-                  <span className="absolute -top-2 right-2 text-xs text-green-400 bg-gray-800 px-1 rounded">
-                    現在: {latestRecord.points}RP
-                  </span>
-                </div>
-              )}
             </div>
           )}
         </div>
