@@ -9,6 +9,7 @@ import PasswordGate from '../components/PasswordGate'
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const { 
     selectedGame, 
     gameRecords
@@ -40,39 +41,47 @@ export default function Home() {
   }, [])
 
   const handleAuthenticated = () => {
-    setIsAuthenticated(true)
+    setIsTransitioning(true)
+    setTimeout(() => {
+      setIsAuthenticated(true)
+      setIsTransitioning(false)
+    }, 300) // フェードアウト時間
   }
 
-  if (!isMounted) return null
+  // マウント完了までのハイドレーションガード
+  if (!isMounted) {
+    return null
+  }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white relative">
-      {/* フェードアウト・フェードインアニメーション */}
-      <div className={`absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 transition-opacity duration-1000 ease-in-out ${
-        isAuthenticated ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}>
-        {/* 動的背景要素 */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse animation-delay-2000"></div>
-          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse animation-delay-4000"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-        </div>
-        
-        {/* ロック画面 */}
-        <div className={`relative z-10 flex items-center justify-center min-h-screen px-4 transition-all duration-1000 ease-in-out transform ${
-          isAuthenticated ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* 排他的レンダリング - どちらか一方のみを表示 */}
+      {!isAuthenticated ? (
+        <div className={`transition-opacity duration-300 ease-in-out ${
+          isTransitioning ? 'opacity-0' : 'opacity-100'
         }`}>
-          <PasswordGate onAuthenticated={handleAuthenticated} />
+          <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+            {/* 動的背景要素 */}
+            <div className="absolute inset-0">
+              <div className="absolute top-0 left-0 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+              <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse animation-delay-2000"></div>
+              <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse animation-delay-4000"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+            </div>
+            
+            {/* ロック画面 */}
+            <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
+              <PasswordGate onAuthenticated={handleAuthenticated} />
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* メインコンテンツ */}
-      <div className={`relative z-20 transition-all duration-1000 ease-in-out transform ${
-        isAuthenticated ? 'scale-100 opacity-100' : 'scale-105 opacity-0'
-      }`}>
-        {isAuthenticated && <MainContent />}
-      </div>
+      ) : (
+        <div className={`transition-all duration-700 ease-in-out transform ${
+          isTransitioning ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+        }`}>
+          <MainContent />
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes pulse {
