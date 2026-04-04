@@ -15,14 +15,14 @@ export default function History() {
     if (!selectedGame) {
       return getDefaultRankInfo()
     }
-    return calculateRankProgress(points)
+    return calculateRankProgress(points || 0)
   }
 
   const getDailyChange = (currentIndex: number) => {
     if (currentIndex === 0) return 0
     const current = gameRecords[currentIndex]
     const previous = gameRecords[currentIndex - 1]
-    return current.rp - previous.rp
+    return (current?.rp || 0) - (previous?.rp || 0)
   }
 
   const formatDateTime = (record: GameRecord) => {
@@ -73,8 +73,8 @@ export default function History() {
             {gameRecords.slice().reverse().map((record, index) => {
               const reversedIndex = gameRecords.length - 1 - index
               const dailyChange = getDailyChange(reversedIndex)
-              const rank = getRank(record.rp)
-              const change = reversedIndex > 0 ? record.rp - gameRecords[reversedIndex - 1].rp : 0
+              const rank = getRank(record?.rp || 0)
+              const change = reversedIndex > 0 ? (record?.rp || 0) - (gameRecords[reversedIndex - 1]?.rp || 0) : 0
               
               return (
                 <div
@@ -95,7 +95,7 @@ export default function History() {
                             <span>{rank.name}</span>
                           </div>
                           <div className="text-xl font-bold">
-                            {record.rp.toLocaleString()} {selectedGame.pointUnit}
+                            {Number(record.rp || 0).toLocaleString()} {selectedGame.pointUnit}
                           </div>
                         </div>
                         {reversedIndex > 0 && (
