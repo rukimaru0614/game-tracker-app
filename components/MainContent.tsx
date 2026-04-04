@@ -444,49 +444,6 @@ export default function MainContent() {
     return Math.round(averageChange)
   }, [gameRecords])
   
-  // ランクアップ予測（record.rankとrecord.rpで計算）- unifiedRankCalculatorを禁止
-  const rankUpPrediction = useMemo(() => {
-    if (!latestRecord || !gameRecords || gameRecords.length < 5) {
-      return { 
-        matchesNeeded: null, 
-        isTopRank: false, 
-        averageRPChange: 0,
-        status: 'データ収集中...' 
-      }
-    }
-    
-    // 最新5試合のRP増減を計算
-    const recentRecords = gameRecords.slice(-5)
-    const latestRP = Number(recentRecords[recentRecords.length - 1]?.rp || 0)
-    const fiveMatchesAgoRP = Number(recentRecords[0]?.rp || 0)
-    const totalRPChange = latestRP - fiveMatchesAgoRP
-    const averageRPChange = totalRPChange / 4 // 4回の変化（5試合間）
-    
-    if (averageRPChange <= 0) {
-      return { 
-        matchesNeeded: null, 
-        isTopRank: false, 
-        averageRPChange,
-        status: 'RP増加なし' 
-      }
-    }
-    
-    // 次のランクまでの必要RPを現在のランクに基づいて計算（unifiedRankCalculator禁止）
-    const currentRankName = latestRecord.currentTier || ''
-    const pointsToNext = 1000 // 簡易計算：次ランクまで1000RPと仮定
-    
-    const matchesNeeded = Math.ceil(pointsToNext / averageRPChange)
-    
-    return {
-      matchesNeeded,
-      isTopRank: false,
-      averageRPChange,
-      pointsToNext,
-      status: '',
-      currentRank: currentRankName // ← 現在のランク名を追加
-    }
-  }, [latestRecord, gameRecords])
-  
   // 現在のRP（最新データ）を表示
   const currentRP = useMemo(() => {
     if (!gameRecords || gameRecords.length === 0) return null
@@ -494,7 +451,7 @@ export default function MainContent() {
     return Number(latest?.rp || 0)
   }, [gameRecords])
   
-  // 5試合分析（ランクアップ予測）の復旧
+  // 5試合分析（ランクアップ予測）の確定 - 二重定義を解消
   const rankUpPrediction = useMemo(() => {
     if (!gameRecords || gameRecords.length < 5) {
       return { 
