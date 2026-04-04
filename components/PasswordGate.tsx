@@ -12,20 +12,25 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    const savedAuth = localStorage.getItem('app-authenticated')
-    const authTime = localStorage.getItem('app-auth-time')
-    
-    if (savedAuth === 'true' && authTime) {
-      const authDate = new Date(authTime)
-      const now = new Date()
-      const hoursDiff = (now.getTime() - authDate.getTime()) / (1000 * 60 * 60)
+    try {
+      const savedAuth = localStorage.getItem('app-authenticated')
+      const authTime = localStorage.getItem('app-auth-time')
       
-      // 24時間以内なら再認証不要
-      if (hoursDiff < 24) {
-        setIsAuthenticated(true)
-        onAuthenticated()
-        return
+      if (savedAuth === 'true' && authTime) {
+        const authDate = new Date(authTime)
+        const now = new Date()
+        const hoursDiff = (now.getTime() - authDate.getTime()) / (1000 * 60 * 60)
+        
+        // 24時間以内なら再認証不要
+        if (hoursDiff < 24) {
+          setIsAuthenticated(true)
+          onAuthenticated()
+          return
+        }
       }
+    } catch (error) {
+      console.error('localStorage read error:', error)
+      // localStorageが読めなくても認証画面を表示
     }
   }, [onAuthenticated])
 
@@ -34,11 +39,23 @@ export default function PasswordGate({ onAuthenticated }: { onAuthenticated: () 
     
     if (password === CORRECT_PASSWORD) {
       setIsAuthenticated(true)
-      localStorage.setItem('app-authenticated', 'true')
-      localStorage.setItem('app-auth-time', new Date().toISOString())
+      
+      // localStorage操作をtry-catchで囲む
+      try {
+        localStorage.setItem('app-authenticated', 'true')
+        localStorage.setItem('app-auth-time', new Date().toISOString())
+      } catch (error) {
+        console.error('localStorage error:', error)
+        // localStorageが使えなくても認証は続行
+      }
       
       // ブラウザ履歴を置き換えてパスワード画面に戻らないようにする
-      window.history.replaceState(null, '', '/')
+      try {
+        window.history.replaceState(null, '', '/')
+      } catch (error) {
+        console.error('History API error:', error)
+        // 履歴操作ができなくても認証は続行
+      }
       
       onAuthenticated()
     } else {

@@ -632,12 +632,12 @@ export default function MainContent() {
                   className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
                 >
                   <option value="">ランクを選択</option>
-                  {selectedGame && getGameRankGroups(selectedGame.id).map((rank) => (
+                  {selectedGame && (getGameRankGroups(selectedGame.id) || []).map((rank) => (
                     <option key={rank.name} value={rank.name}>{rank.name}</option>
                   ))}
                 </select>
               </div>
-              {selectedRank && getGameValidDivisions(selectedGame.id, selectedRank).length > 0 && (
+              {selectedRank && (getGameValidDivisions(selectedGame?.id || '', selectedRank) || []).length > 0 && (
                 <div>
                   <label htmlFor="division" className="block text-sm font-medium mb-2">エディション</label>
                   <select
@@ -648,7 +648,7 @@ export default function MainContent() {
                     className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
                   >
                     <option value="">エディションを選択</option>
-                    {getGameValidDivisions(selectedGame.id, selectedRank).map((division) => (
+                    {(getGameValidDivisions(selectedGame?.id || '', selectedRank) || []).map((division) => (
                       <option key={division} value={division}>{division}</option>
                     ))}
                   </select>

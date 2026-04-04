@@ -30,14 +30,14 @@ export const getGameRankGroups = (gameId: string) => {
       SILVER: { name: 'シルバー', icon: '🥈' },
       GOLD: { name: 'ゴールド', icon: '🥇' },
       PLATINUM: { name: 'プラチナ', icon: '🥈' },
-      EMERALD: { name: 'エメラルド', icon: '💚' },
-      DIAMOND: { name: 'ダイヤモンド', icon: '💎' },
+      DIAMOND: { name: 'ダイヤモンド', icon: '�' },
+      EMERALD: { name: 'エメラルド', icon: '�' },
       MASTER: { name: 'マスター', icon: '💜' },
-      GRANDMASTER: { name: 'グランドマスター', icon: '💜' },
-      CHALLENGER: { name: 'チャレンジャー', icon: '👑' }
+      GRANDMASTER: { name: 'グランドマスター', icon: '�' },
+      CHALLENGER: { name: 'チャレンジャー', icon: '�' }
     },
     'street-fighter-6': {
-      IRON: { name: 'アイアン', icon: '⚔️' },
+      IRON: { name: 'アイアン', icon: '⚪' },
       BRONZE: { name: 'ブロンズ', icon: '🥉' },
       SILVER: { name: 'シルバー', icon: '🥈' },
       GOLD: { name: 'ゴールド', icon: '🥇' },
@@ -48,7 +48,9 @@ export const getGameRankGroups = (gameId: string) => {
     }
   }
 
-  return gameRankMap[gameId] || gameRankMap['apex-legends']
+  const result = gameRankMap[gameId] || gameRankMap['apex-legends']
+  // オブジェクトを配列に変換して返す
+  return Object.values(result || {})
 }
 
 export const isGameRankingBased = (rank: string): boolean => {
