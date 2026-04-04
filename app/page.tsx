@@ -381,628 +381,250 @@ export default function Home() {
     return Math.max(0, (goalSettings.targetRP || 0) - latestRecord.points)
   }, [goalSettings, latestRecord])
 
+  // 計算ロジックを完全に分離 - 独立関数化 - 鉄の意志で防御
   const renderMainContent = () => {
-    if (!selectedGame || !gameRecords) return null
-    
-    return (
-      <div className="flex flex-col gap-4">
-        {/* エラー表示 */}
-        {error && (
-          <div className="mb-4 bg-red-900 border border-red-700 rounded-lg p-3">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="w-5 h-5 text-red-400" />
-              <span className="text-red-200 text-sm">{error}</span>
-            </div>
+    try {
+      // 2段構え - データが1ミリでも不完全ならLoading表示
+      if (!selectedGame || !gameRecords || !latestRecord) {
+        return (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-xl text-gray-400">データ読み込み中...</div>
           </div>
-        )}
-
-        {/* ローディング表示 */}
-        {isLoading && (
-          <div className="mb-4 bg-blue-900 border border-blue-700 rounded-lg p-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-blue-200 text-sm">保存中...</span>
-            </div>
-          </div>
-        )}
-        {/* ヘッダーとログイン日数 */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold">ゲームトラッカー</h1>
-            <div className="flex items-center space-x-2">
-              <div className="text-sm text-gray-400">
-                連続ログイン: <span className="text-5xl font-extrabold text-yellow-400">{loginStreak}</span>日
+        )
+      }
+      
+      return (
+        <div className="flex flex-col gap-4">
+          {/* ヘッダーとログイン日数 */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold">ゲームトラッカー</h1>
+              <div className="flex items-center space-x-2">
+                <div className="text-sm text-gray-400">
+                  連続ログイン: <span className="text-5xl font-extrabold text-yellow-400">{loginStreak || 0}</span>日
+                </div>
+                <button
+                  onClick={() => setShowAnalytics(!showAnalytics)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                >
+                  <BarChart3 className="w-5 h-5" />
+                </button>
               </div>
+            </div>
+            
+            {/* ゲームセレクター */}
+            <div className="relative">
               <button
-                onClick={() => setShowAnalytics(!showAnalytics)}
+                onClick={() => setShowGameSelector(!showGameSelector)}
+                className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                style={{ borderLeft: `4px solid ${selectedGame.themeColor || '#666'}` }}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: selectedGame.themeColor || '#666' }}
+                  />
+                  <div className="text-left">
+                    <div className="font-medium">{selectedGame.name || '不明'}</div>
+                    <div className="text-sm text-gray-400">単位: {selectedGame.pointUnit || 'RP'}</div>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 transition-transform ${showGameSelector ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showGameSelector && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg z-10">
+                  {allGames && allGames.map((game) => (
+                    <button
+                      key={game.id}
+                      onClick={() => {
+                        selectGame(game.id)
+                        setShowGameSelector(false)
+                      }}
+                      className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-700 transition-colors ${
+                        selectedGame.id === game.id ? 'bg-gray-700' : ''
+                      }`}
+                      style={{ borderLeft: selectedGame.id === game.id ? `4px solid ${game.themeColor}` : 'none' }}
+                    >
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: game.themeColor }}
+                      />
+                      <div className="text-left">
+                        <div className="font-medium">{game.name}</div>
+                        <div className="text-sm text-gray-400">単位: {game.pointUnit}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 現在のランク表示 - 鉄の意志で防御 */}
+          {latestRecord && latestRecord.points && latestRecord.id ? (
+            <div className="mb-6 space-y-4">
+              <div className="bg-gray-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm text-gray-400">現在のランク</span>
+                  <Trophy className="w-5 h-5 text-yellow-500" />
+                </div>
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="text-2xl">{currentRank?.icon || '🎮'}</div>
+                  <div>
+                    <div className={`text-xl font-bold ${currentRank?.color || 'text-white'}`}>
+                      {currentRank?.name || '不明'}
+                    </div>
+                    <div className="text-sm text-gray-400">
+                      累計: {Number(latestRecord.points || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
+                    </div>
+                    <div className="text-lg font-bold text-blue-400">
+                      ティア内: {Number(currentRank?.tierPoints || 0).toLocaleString()} / {Number(currentRank?.maxTierPoints || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
+                    </div>
+                    {/* 目標RPの表示 */}
+                    {goalSettings?.isActive && goalSettings?.targetRP > 0 && (
+                      <div className="text-sm text-yellow-400 mt-1">
+                        目標: {Number(goalSettings.targetRP || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* ランク進捗バー */}
+                {!currentRank?.isTopRank && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>次のランクまで</span>
+                      <span>{Number(currentRank?.pointsToNext || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${(Number(currentRank?.progress || 0) * 100)}%`,
+                          backgroundColor: selectedGame.themeColor || '#666'
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* データがない場合の綺麗な空状態 */
+            <div className="mb-6 bg-gray-800 rounded-lg p-8 text-center">
+              <div className="text-gray-400 text-lg">
+                データがありません。新しい記録を入力してください。
+              </div>
+            </div>
+          )}
+
+          {/* オレンジのデカ文字 - 計算結果の初期値を完全に固定 */}
+          <div className="my-6 bg-gray-800 rounded-lg p-6">
+            <div className="text-center">
+              <div className="text-6xl font-extrabold text-orange-500">
+                あと {Number(remainingToGoal || 0).toLocaleString()} RP
+              </div>
+              <div className="text-sm text-gray-400 mt-2">
+                目標: {Number(goalSettings?.targetRP || 0).toLocaleString()} {selectedGame.pointUnit || 'RP'}
+              </div>
+            </div>
+          </div>
+
+          {/* 黄色の分析データ - .toFixed() を使用せず安全に計算 */}
+          <div className="my-6 bg-gray-800 rounded-lg p-4">
+            <div className="text-center">
+              <div className="text-3xl font-extrabold text-yellow-400">
+                あと約 {Number(analyticsData?.estimatedMatchesToGoal || 0)} 試合で目標達成！
+              </div>
+              <div className="text-sm text-gray-400 mt-2">
+                直近5試合の平均上昇RPから算出
+              </div>
+            </div>
+          </div>
+
+          {/* 保存ボタンなどの操作パネル */}
+          <div className="mb-6 bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">新しい記録</h2>
+              <button
+                onClick={() => setShowGoalForm(!showGoalForm)}
                 className={`p-2 rounded-lg transition-colors ${
-                  showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
+                  showGoalForm ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
                 }`}
               >
-                <BarChart3 className="w-5 h-5" />
+                <Target className="w-5 h-5" />
               </button>
             </div>
-          </div>
-          
-          {/* ゲームセレクター */}
-          <div className="relative">
-            <button
-              onClick={() => setShowGameSelector(!showGameSelector)}
-              className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-              style={{ borderLeft: `4px solid ${selectedGame.themeColor}` }}
-            >
-              <div className="flex items-center space-x-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: selectedGame.themeColor }}
-                />
-                <div className="text-left">
-                  <div className="font-medium">{selectedGame.name}</div>
-                  <div className="text-sm text-gray-400">単位: {selectedGame.pointUnit}</div>
-                </div>
-              </div>
-              <ChevronDown className={`w-5 h-5 transition-transform ${showGameSelector ? 'rotate-180' : ''}`} />
-            </button>
             
-            {showGameSelector && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 rounded-lg shadow-lg z-10">
-                {allGames.map((game) => (
-                  <button
-                    key={game.id}
-                    onClick={() => {
-                      selectGame(game.id)
-                      setShowGameSelector(false)
-                    }}
-                    className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-700 transition-colors ${
-                      selectedGame.id === game.id ? 'bg-gray-700' : ''
-                    }`}
-                    style={{ borderLeft: selectedGame.id === game.id ? `4px solid ${game.themeColor}` : 'none' }}
-                  >
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: game.themeColor }}
+            {/* 目標設定フォーム */}
+            {showGoalForm && (
+              <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+                <h3 className="text-md font-semibold mb-3">目標を設定</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="target-rp" className="block text-sm font-medium mb-2">目標RP</label>
+                    <input
+                      id="target-rp"
+                      name="target-rp"
+                      type="number"
+                      value={Number(goalSettings.targetRP || 0)}
+                      onChange={(e) => setGoalSettings({...goalSettings, targetRP: parseInt(e.target.value) || 0})}
+                      className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                      placeholder="例: 10000"
                     />
-                    <div className="text-left">
-                      <div className="font-medium">{game.name}</div>
-                      <div className="text-sm text-gray-400">単位: {game.pointUnit}</div>
-                    </div>
-                  </button>
-                ))}
+                  </div>
+                  <div>
+                    <label htmlFor="target-rank" className="block text-sm font-medium mb-2">目標ランク</label>
+                    <input
+                      id="target-rank"
+                      name="target-rank"
+                      type="text"
+                      value={goalSettings.targetRank || ''}
+                      onChange={(e) => setGoalSettings({...goalSettings, targetRank: e.target.value})}
+                      className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                      placeholder="例: ダイヤモンド"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="deadline" className="block text-sm font-medium mb-2">期限</label>
+                    <input
+                      id="deadline"
+                      name="deadline"
+                      type="date"
+                      value={goalSettings.deadline || ''}
+                      onChange={(e) => setGoalSettings({...goalSettings, deadline: e.target.value})}
+                      className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      onClick={saveGoalSettings}
+                      className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+                    >
+                      目標を保存
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
-
-        {/* 現在のランク表示 - 安全チェック付き */}
-        {latestRecord && latestRecord.points && latestRecord.id ? (
-          <div className="mb-6 space-y-4">
-            <div className="bg-gray-800 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-gray-400">現在のランク</span>
-                <Trophy className="w-5 h-5 text-yellow-500" />
-              </div>
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="text-2xl">{currentRank?.icon}</div>
-                <div>
-                  <div className={`text-xl font-bold ${currentRank?.color}`}>
-                    {currentRank?.name}
-                  </div>
-                  <div className="text-sm text-gray-400">
-                    累計: {latestRecord.points.toLocaleString()} {selectedGame.pointUnit}
-                  </div>
-                  <div className="text-lg font-bold text-blue-400">
-                    ティア内: {currentRank?.tierPoints?.toLocaleString() || 0} / {currentRank?.maxTierPoints?.toLocaleString() || 0} {selectedGame.pointUnit}
-                  </div>
-                  {/* 目標RPの表示 */}
-                  {goalSettings?.isActive && goalSettings?.targetRP > 0 && (
-                    <div className="text-sm text-yellow-400 mt-1">
-                      目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* ランク進捗バー */}
-              {!currentRank?.isTopRank && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-gray-400">
-                    <span>次のランクまで</span>
-                    <span>{currentRank?.pointsToNext.toLocaleString()} {selectedGame.pointUnit}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="h-2 rounded-full transition-all duration-300"
-                      style={{ 
-                        width: `${(currentRank?.progress || 0) * 100}%`,
-                        backgroundColor: selectedGame.themeColor
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          /* データがない場合の綺麗な空状態 */
-          <div className="mb-6 bg-gray-800 rounded-lg p-8 text-center">
-            <div className="text-gray-400 text-lg">
-              データがありません。新しい記録を入力してください。
-            </div>
-          </div>
-        )}
-
-        {/* オレンジのデカ文字（TEST_DISPLAY削除） */}
-        <div className="my-6 bg-gray-800 rounded-lg p-6">
-          <div className="text-center">
-            <div className="text-6xl font-extrabold text-orange-500">
-              あと {remainingToGoal.toLocaleString()} RP
-            </div>
-            <div className="text-sm text-gray-400 mt-2">
-              目標: {goalSettings.targetRP.toLocaleString()} {selectedGame.pointUnit}
-            </div>
-          </div>
-        </div>
-
-      {/* グラフ（チャート） */}
-        {chartData.length > 0 && (
-          <div className="mb-6 bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">ポイント推移</h2>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setPeriodFilter('all')}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    periodFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                >
-                  全期間
-                </button>
-                <button
-                  onClick={() => setPeriodFilter('week')}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    periodFilter === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                >
-                  1週間
-                </button>
-                <button
-                  onClick={() => setPeriodFilter('month')}
-                  className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                    periodFilter === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                >
-                  1ヶ月
-                </button>
-              </div>
-            </div>
-            
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="displayDate" 
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af' }}
-                />
-                <YAxis 
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px'
-                  }}
-                  labelStyle={{ color: '#f3f4f6' }}
-                  itemStyle={{ color: '#f3f4f6' }}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="points" 
-                  stroke={selectedGame.themeColor}
-                  strokeWidth={3}
-                  dot={{ fill: selectedGame.themeColor, r: 6 }}
-                  activeDot={{ r: 8 }}
-                  name="ポイント"
-                />
-                {goalLines.map((line) => (
-                  <ReferenceLine
-                    key={line.key}
-                    y={line.value}
-                    stroke={line.color}
-                    strokeDasharray="5 5"
-                    label={line.label}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-
-        {/* 黄色の分析データ（TEST_DISPLAY削除） - 安全装置付き */}
-        <div className="my-6 bg-gray-800 rounded-lg p-4">
-          <div className="text-center">
-            <div className="text-3xl font-extrabold text-yellow-400">
-              あと約 {analyticsData?.estimatedMatchesToGoal || 0} 試合で目標達成！
-            </div>
-            <div className="text-sm text-gray-400 mt-2">
-              直近5試合の平均上昇RPから算出
-            </div>
-          </div>
-        </div>
-
-        {/* 保存ボタンなどの操作パネル */}
-        <div className="mb-6 bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">新しい記録</h2>
-            <button
-              onClick={() => setShowGoalForm(!showGoalForm)}
-              className={`p-2 rounded-lg transition-colors ${
-                showGoalForm ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-            >
-              <Target className="w-5 h-5" />
-            </button>
-          </div>
-          
-          {/* 目標設定フォーム */}
-          {showGoalForm && (
-            <div className="mb-4 p-4 bg-gray-700 rounded-lg">
-              <h3 className="text-md font-semibold mb-3">目標を設定</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="target-rp" className="block text-sm font-medium mb-2">目標RP</label>
-                  <input
-                    id="target-rp"
-                    name="target-rp"
-                    type="number"
-                    value={goalSettings.targetRP}
-                    onChange={(e) => setGoalSettings({...goalSettings, targetRP: parseInt(e.target.value) || 0})}
-                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                    placeholder="例: 10000"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="target-rank" className="block text-sm font-medium mb-2">目標ランク</label>
-                  <input
-                    id="target-rank"
-                    name="target-rank"
-                    type="text"
-                    value={goalSettings.targetRank}
-                    onChange={(e) => setGoalSettings({...goalSettings, targetRank: e.target.value})}
-                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                    placeholder="例: ダイヤモンド"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="deadline" className="block text-sm font-medium mb-2">期限</label>
-                  <input
-                    id="deadline"
-                    name="deadline"
-                    type="date"
-                    value={goalSettings.deadline}
-                    onChange={(e) => setGoalSettings({...goalSettings, deadline: e.target.value})}
-                    className="w-full px-3 py-2 bg-gray-600 rounded-lg text-white"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <button
-                    onClick={saveGoalSettings}
-                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
-                  >
-                    目標を保存
-                  </button>
-                </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="space-y-4">
-          {/* 日付選択 */}
-          <div>
-            <label htmlFor="selected-date" className="block text-sm font-medium mb-2">日付</label>
-            <input
-              id="selected-date"
-              name="selected-date"
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 rounded-lg text-white"
-            />
-          </div>
-
-          {/* ランク選択 */}
-          <div>
-            <label className="block text-sm font-medium mb-2">ランク</label>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(getGameRankGroups(selectedGame.id)).map(([rankKey, group]) => (
-                <button
-                  key={rankKey}
-                  onClick={() => {
-                    setSelectedRank(group.name)
-                    setSelectedDivision('')
-                    setRankingPosition('')
-                  }}
-                  className={`p-2 rounded-lg text-sm transition-colors ${
-                    selectedRank === group.name 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    <span>{group.icon}</span>
-                    <span>{group.name}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ディビジョン選択（通常ランクの場合） */}
-          {selectedRank && !isGameRankingBased(selectedRank) && (
-            <div>
-              <label className="block text-sm font-medium mb-2">ディビジョン</label>
-              <div className="grid grid-cols-4 gap-2">
-                {getGameValidDivisions(selectedGame.id, selectedRank).map((division) => (
-                  <button
-                    key={division}
-                    onClick={() => setSelectedDivision(division)}
-                    className={`p-2 rounded-lg text-sm transition-colors ${
-                      selectedDivision === division 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
-                  >
-                    {division}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 順位入力（ランキング制ランクの場合） */}
-          {selectedRank && isGameRankingBased(selectedRank) && (
-            <div>
-              <label htmlFor="ranking-position" className="block text-sm font-medium mb-2">順位</label>
-              <input
-                id="ranking-position"
-                name="ranking-position"
-                type="number"
-                value={rankingPosition}
-                onChange={(e) => setRankingPosition(e.target.value)}
-                placeholder="例: 1234"
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg text-white"
-              />
-            </div>
-          )}
-
-          {/* ティア内RP入力（通常ランクの場合） */}
-          {selectedRank && !isGameRankingBased(selectedRank) && (
-            <div>
-              <label htmlFor="tier-points" className="block text-sm font-medium mb-2">ティア内RP</label>
-              <input
-                id="tier-points"
-                name="tier-points"
-                type="number"
-                value={currentTierPoints}
-                onChange={(e) => setCurrentTierPoints(e.target.value)}
-                placeholder="例: 150"
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg text-white"
-              />
-            </div>
-          )}
-
-          {/* メモ入力 */}
-          <div>
-            <label htmlFor="memo" className="block text-sm font-medium mb-2">メモ（任意）</label>
-            <textarea
-              id="memo"
-              name="memo"
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              placeholder="今日の練習で気づいたこと、改善点など"
-              rows={3}
-              className="w-full px-3 py-2 bg-gray-700 rounded-lg text-white resize-none"
-            />
-          </div>
-
-          {/* 試合数と最高順位 */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="matches" className="block text-sm font-medium mb-2">試合数（任意）</label>
-              <input
-                id="matches"
-                name="matches"
-                type="number"
-                value={matches}
-                onChange={(e) => setMatches(e.target.value)}
-                placeholder="例: 5"
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg text-white"
-              />
-            </div>
-            <div>
-              <label htmlFor="best-placement" className="block text-sm font-medium mb-2">最高順位（任意）</label>
-              <input
-                id="best-placement"
-                name="best-placement"
-                type="number"
-                value={bestPlacement}
-                onChange={(e) => setBestPlacement(e.target.value)}
-                placeholder="例: 1"
-                className="w-full px-3 py-2 bg-gray-700 rounded-lg text-white"
-              />
-            </div>
-          </div>
-
-          {/* 保存ボタン */}
-          <button
-            onClick={saveRecord}
-            disabled={isLoading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
-          >
-            {isLoading ? '保存中...' : '記録を保存'}
-          </button>
-        </div>
-      </div>
-
-      {/* グラフ */}
-      {chartData.length > 0 && (
-        <div className="mb-6 bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">ポイント推移</h2>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setPeriodFilter('all')}
-                className={`px-3 py-1 rounded text-sm transition-colors ${
-                  periodFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                全期間
-              </button>
-              <button
-                onClick={() => setPeriodFilter('week')}
-                className={`px-3 py-1 rounded text-sm transition-colors ${
-                  periodFilter === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                1週間
-              </button>
-              <button
-                onClick={() => setPeriodFilter('month')}
-                className={`px-3 py-1 rounded text-sm transition-colors ${
-                  periodFilter === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'
-                }`}
-              >
-                1ヶ月
-              </button>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData} onClick={handleChartClick}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="displayDate" 
-                stroke="#9CA3AF"
-                tick={{ fill: '#9CA3AF' }}
-              />
-              <YAxis 
-                stroke="#9CA3AF"
-                tick={{ fill: '#9CA3AF' }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1F2937',
-                  border: '1px solid #374151',
-                  borderRadius: '0.5rem'
-                }}
-                labelStyle={{ color: '#F3F4F6' }}
-              />
-              <Line
-                type="monotone"
-                dataKey="points"
-                stroke={selectedGame.themeColor}
-                strokeWidth={2}
-                dot={{ fill: selectedGame.themeColor, r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-              {/* 目標ライン */}
-              {goalLines.map((line, index) => (
-                <ReferenceLine
-                  key={index}
-                  y={line.rp}
-                  stroke={line.color}
-                  strokeDasharray="5 5"
-                  label={line.label}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {/* 推定試合数表示（無条件強制表示・全条件撤廃） */}
-      <div className="my-6 bg-gray-800 rounded-lg p-4">
-        <div className="text-center">
-          <div className="text-3xl font-extrabold text-yellow-400">
-            あと約 {analyticsData?.estimatedMatchesToGoal || '計算中'} 試合で目標達成！
-          </div>
-          <div className="text-sm text-gray-400 mt-2">
-            直近5試合の平均上昇RPから算出
-          </div>
-        </div>
-      </div>
-
-      {/* 履歴 - 完全に削除 */}
-
-      {/* 選択されたデータポイントの詳細 */}
-      {selectedChartPoint && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold">記録詳細</h3>
-              <button
-                onClick={() => setSelectedChartPoint(null)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              <div>
-                <div className="text-sm text-gray-400 mb-1">日時</div>
-                <div className="font-medium">
-                  {formatDate(selectedChartPoint.date)} {selectedChartPoint.time}
-                </div>
-              </div>
-              
-              <div>
-                <div className="text-sm text-gray-400 mb-1">ランク</div>
-                <div className="font-medium">{selectedChartPoint.currentTier}</div>
-              </div>
-              
-              <div>
-                <div className="text-sm text-gray-400 mb-1">累計RP</div>
-                <div className="font-medium text-blue-400">
-                  {selectedChartPoint.points.toLocaleString()} {selectedGame.pointUnit}
-                </div>
-              </div>
-              
-              <div>
-                <div className="text-sm text-gray-400 mb-1">ティア内RP</div>
-                <div className="font-medium">
-                  {selectedChartPoint.tierPoints.toLocaleString()} {selectedGame.pointUnit}
-                </div>
-              </div>
-              
-              {selectedChartPoint.matches && (
-                <div>
-                  <div className="text-sm text-gray-400 mb-1">マッチ数</div>
-                  <div className="font-medium">{selectedChartPoint.matches} 試合</div>
-                </div>
-              )}
-              
-              {selectedChartPoint.bestPlacement && (
-                <div>
-                  <div className="text-sm text-gray-400 mb-1">最高順位</div>
-                  <div className="font-medium">{selectedChartPoint.bestPlacement} 位</div>
-                </div>
-              )}
-              
-              {selectedChartPoint.memo && (
-                <div>
-                  <div className="text-sm text-gray-400 mb-1">振り返りメモ</div>
-                  <div className="font-medium whitespace-pre-wrap">{selectedChartPoint.memo}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
+      )
+    } catch (error) {
+      // エラーが起きたら白い画面で止まらせない
+      console.error('renderMainContent error:', error)
       return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-xl text-red-400">エラーが発生しました</div>
+        </div>
+      )
+    }
+  }
+
+  return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* 表示の切り替えを「中身」で行う - Hooksルール違反防止 */}
       {selectedGame && gameRecords ? renderMainContent() : <PasswordGate onAuthenticated={() => {}} />}
