@@ -10,6 +10,7 @@ import { getGameRankGroups, isGameRankingBased, getGameValidDivisions } from '..
 import { getGameRankThresholds } from '../utils/rankThresholds'
 import { calculateAnalyticsData, type AnalyticsData } from '../utils/analyticsCalculator'
 import { getGoalLines, type GoalLine } from '../utils/goalLines'
+import PasswordGate from '../components/PasswordGate'
 
 // 目標ポイント設定の型
 interface GoalSettings {
@@ -57,7 +58,7 @@ export default function Home() {
   // 連続ログイン日数の管理
   const [loginStreak, setLoginStreak] = useState(0)
   const [lastLoginDate, setLastLoginDate] = useState<string | null>(null)
-  
+
   // データ洗浄と重複削除（初回読み込み時のみ実行）- 超緊急クリーンアップ
   useEffect(() => {
     // 超緊急：localStorageを全消去して真っさらな状態に
@@ -143,33 +144,28 @@ export default function Home() {
       const storedLastLogin = localStorage.getItem('lastLoginDate')
       const storedStreak = localStorage.getItem('loginStreak')
       
+      let streak = 0
+      
       if (storedLastLogin) {
         const lastLogin = new Date(storedLastLogin)
-        lastLogin.setHours(0, 0, 0, 0)
+        const diffTime = today.getTime() - lastLogin.getTime()
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
         
-        const daysDiff = Math.floor((today.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24))
-        
-        if (daysDiff === 1) {
-          // 連続ログイン
-          const newStreak = parseInt(storedStreak || '0') + 1
-          setLoginStreak(newStreak)
-          localStorage.setItem('loginStreak', newStreak.toString())
-        } else if (daysDiff > 1) {
-          // 連続が切れた
-          setLoginStreak(1)
-          localStorage.setItem('loginStreak', '1')
-        } else {
-          // 同日ログイン
-          setLoginStreak(parseInt(storedStreak || '0'))
+        if (diffDays === 1) {
+          // 昨日ログインの場合、ストリークを継続
+          streak = parseInt(storedStreak || '0') + 1
+        } else if (diffDays > 1) {
+          // 1日以上空いた場合、ストリークをリセット
+          streak = 1
         }
       } else {
-        // 初回ログイン
-        setLoginStreak(1)
-        localStorage.setItem('loginStreak', '1')
+        // 初回ログインの場合
+        streak = 1
       }
       
       localStorage.setItem('lastLoginDate', today.toISOString())
       setLastLoginDate(today.toISOString())
+      setLoginStreak(streak)
     }
     
     calculateLoginStreak()
@@ -385,11 +381,10 @@ export default function Home() {
     return Math.max(0, (goalSettings.targetRP || 0) - latestRecord.points)
   }, [goalSettings, latestRecord])
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* エラー表示 */}
-      {error && (
-        <div className="mb-4 bg-red-900 border border-red-700 rounded-lg p-3">
+  const renderMainContent = () => {
+    if (!selectedGame || !gameRecords) return null
+    
+    return (
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-5 h-5 text-red-400" />
             <span className="text-red-200 text-sm">{error}</span>
